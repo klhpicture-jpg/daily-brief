@@ -40,3 +40,14 @@ def test_dry_run_no_llm_writes_a_page(tmp_path, monkeypatch):
     assert "Stub digest" in index
     assert "Shopify raises Plus pricing" in index
     assert (state_dir / "seen.json").read_text() == json.dumps({"last_run": None, "seen": {}}), "dry run must not touch state"
+
+
+def test_podcast_feed_falls_back_to_show_notes():
+    from src.collectors import units
+
+    got = units({"podcasts": [{"name": "Pod", "feed": f"file://{FIXTURE}", "max_minutes": 60}]})
+    assert len(got) == 1
+    label, fn, cfg = got[0]
+    items = fn(cfg, datetime(2026, 9, 14, tzinfo=timezone.utc))
+    assert items and all(it.source_type == "podcast" for it in items)
+    assert not any(it.meta.get("body_fetched") for it in items)

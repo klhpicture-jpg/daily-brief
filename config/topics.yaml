@@ -1,29 +1,36 @@
 # What I want to know about, in priority order.
-# The ranker sees this verbatim. Write it like you would brief a smart assistant.
+# The ranker and the writer see this file verbatim. Write it like you would brief a smart assistant.
 me: >
-  Head of digital growth at a European apparel and workwear company.
-  I own e-commerce, digital marketing and the growth team.
-  I care about things I can act on this quarter, not general tech news.
+  Marketing Manager at Creative Force (workflow platform for high-volume e-commerce content
+  production) and Dreem (virtual, AI-generated product imagery for retailers). I own go-to-market
+  for the combined offering to enterprise fashion, beauty and lifestyle retailers with in-house
+  studios in Europe and North America. I build my own AI-driven outreach systems (Clay, n8n,
+  HubSpot, Heyreach, coding agents), so I follow AI models and agent tooling as a practitioner,
+  not a spectator. I am Danish, work with Germans and other Europeans every week, and follow
+  football, Formula 1, pro cycling and tennis. I read this on my phone in two minutes. Give me
+  what I can act on or talk about today, not general news.
 
 priorities:
-  - name: E-commerce and DTC operations
+  - name: AI models and agent tooling
     weight: high
-    include: [conversion optimisation, merchandising, PIM, product content, marketplaces, B2B e-commerce]
+    include: [frontier model releases and comparisons, open-weight models, Claude Code, Codex, Cursor, MCP, agent frameworks and harnesses, AI engineering, prompt injection and safety findings that change how to build]
   - name: AI in marketing and content production
     weight: high
-    include: [AI content generation, creative automation, agentic workflows, martech consolidation]
-  - name: Apparel and workwear industry
+    include: [AI image and video generation for product content, virtual photography, creative automation, AI in go-to-market and martech, SEO and AEO under AI search]
+  - name: Retail and e-commerce content operations
     weight: high
-    include: [European apparel retail, workwear brands, supply chain, sustainability regulation]
-  - name: Growth and demand generation
+    include: [fashion beauty and lifestyle retailers, in-house studios, product content and PIM, B2B e-commerce, marketplaces, Shopify and platform changes]
+  - name: Europe and Germany
     weight: medium
-    include: [paid media shifts, SEO and AEO, lifecycle marketing, attribution]
-  - name: Platform and tooling changes
+    include: [EU policy that touches business or AI, German politics and economy, Danish news, what Germans are talking about this week]
+  - name: Sports
     weight: medium
-    include: [Shopify, HubSpot, Google, Meta, Klaviyo product and pricing changes]
+    include: [football (Premier League, Bundesliga, Superliga, Denmark national team), Formula 1, pro cycling and Danish riders, tennis Grand Slams, the story behind the result rather than the result itself]
 
 exclude:
   - funding rounds under 50M USD with no product angle
-  - US politics unless it directly changes e-commerce rules
+  - US politics unless it changes EU or e-commerce rules
   - generic "AI will change everything" think pieces with no specifics
-  - press releases with no new information
+  - press releases and sponsored content with no new information
+  - match reports and scores with no story behind them
+  - transfer rumours without a named source

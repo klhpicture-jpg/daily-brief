@@ -37,9 +37,17 @@ Repo variables (not secrets): `DELIVERY_CHANNEL` (`telegram`, the default, `sms`
 
 ## Add a source
 
-Add one line to `config/sources.yaml` under `rss` (or `podcasts` from phase 2) and commit.
-A broken source never kills the run: it is listed in the page footer instead.
-Prefer feeds over scraping, always. Only feedless pages go under `web_watch` (phase 3).
+Add one line to `config/sources.yaml` and commit. A broken source never kills the run: it is
+listed in the page footer instead. Run the "check sources" workflow after editing.
+
+- **Anything with a feed** goes under `rss`. Free. Substack: append `/feed` to the URL. Acast
+  podcasts: `feeds.acast.com/public/shows/<show>`.
+- **Podcasts** go under `podcasts`. Show notes are collected for free. `transcribe: true` turns on
+  full transcription (phase 2), about 0.02 USD per 10 minutes of audio; `max_minutes` caps it.
+- **Email-only newsletters** (TLDR AI, Politico Playbook): create a feed at kill-the-newsletter.com,
+  subscribe with the address it gives you, paste the feed URL under `rss`.
+- **Paywalled sites**: skip them, their podcasts are usually free.
+- **Feedless pages** go under `web_watch` (phase 3, Firecrawl).
 
 ## Change topics
 

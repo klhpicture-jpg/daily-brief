@@ -61,9 +61,13 @@ def units(sources: dict) -> list[Unit]:
             out.append((f"RSS: {feed.get('name', feed.get('url'))}", rss.collect_feed, feed))
 
     podcast = _module("podcast")
-    if podcast:
-        for feed in sources.get("podcasts") or []:
-            out.append((f"Podcast: {feed.get('name', feed.get('feed'))}", podcast.collect_feed, feed))
+    for feed in sources.get("podcasts") or []:
+        label = f"Podcast: {feed.get('name', feed.get('feed'))}"
+        if podcast:
+            out.append((label, podcast.collect_feed, feed))
+        elif rss:
+            # Phase 2 is not built yet: read the show notes through the RSS collector, free.
+            out.append((label, rss.collect_feed, {**feed, "url": feed["feed"], "source_type": "podcast"}))
 
     watch = _module("firecrawl_watch")
     if watch:

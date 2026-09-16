@@ -61,6 +61,7 @@ def _entry_text(entry) -> str:
 def collect_feed(feed: dict, since: datetime) -> list[Item]:
     name = feed.get("name") or feed.get("url")
     url = feed["url"]
+    source_type = feed.get("source_type", "rss")
     now = utcnow()
     parsed = feedparser.parse(_read_feed(url))
     if parsed.bozo and not parsed.entries:
@@ -72,7 +73,7 @@ def collect_feed(feed: dict, since: datetime) -> list[Item]:
         published = entry.get("published_parsed") or entry.get("updated_parsed")
         item = make_item(
             source=name,
-            source_type="rss",
+            source_type=source_type,
             title=entry.get("title") or "",
             url=link,
             published_at=published,
@@ -83,7 +84,12 @@ def collect_feed(feed: dict, since: datetime) -> list[Item]:
         )
         if item.published_at < since:
             continue
-        if len(item.text) < SUMMARY_IS_ENOUGH and link and not url.startswith("file://"):
+        if source_type == "podcast":
+            enclosures = [e for e in entry.get("enclosures", []) if (e.get("type") or "").startswith("audio/")]
+            if enclosures:
+                item.meta["audio_url"] = enclosures[0].get("href")
+            item.meta["duration"] = entry.get("itunes_duration")
+        elif len(item.text) < SUMMARY_IS_ENOUGH and link and not url.startswith("file://"):
             body = fetch_body(link)
             if len(body) > len(item.text):
                 item.text = truncate_text(body)
