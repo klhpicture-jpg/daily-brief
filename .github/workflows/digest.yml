@@ -1,0 +1,80 @@
+name: digest
+
+on:
+  schedule:
+    - cron: "0 5 * * *"   # 07:00 Copenhagen in summer, 06:00 in winter (cron is UTC, no DST)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "No delivery, no state write"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: digest
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+      APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+      TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+      TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+      TWILIO_FROM: ${{ secrets.TWILIO_FROM }}
+      TWILIO_TO: ${{ secrets.TWILIO_TO }}
+      TWILIO_CONTENT_SID: ${{ secrets.TWILIO_CONTENT_SID }}
+      DELIVERY_CHANNEL: ${{ vars.DELIVERY_CHANNEL || 'sms' }}
+      OPENAI_RANK_MODEL: ${{ vars.OPENAI_RANK_MODEL || 'gpt-5-nano' }}
+      OPENAI_WRITE_MODEL: ${{ vars.OPENAI_WRITE_MODEL || 'gpt-5' }}
+      OPENAI_TRANSCRIBE_MODEL: ${{ vars.OPENAI_TRANSCRIBE_MODEL || 'gpt-4o-mini-transcribe' }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Ensure feedback labels exist
+        continue-on-error: true
+        run: python scripts/ensure_labels.py
+
+      - name: Build and deliver the digest
+        run: python -m src.main ${{ inputs.dry_run == true && '--dry-run' || '' }}
+
+      - name: Commit state and pages
+        if: ${{ inputs.dry_run != true }}
+        run: |
+          git config user.name "daily-brief bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add state docs config/learned.md 2>/dev/null || git add state docs
+          if git diff --cached --quiet; then
+            echo "nothing to commit"
+            exit 0
+          fi
+          git commit -m "Publish digest $(date -u +%Y-%m-%d) [skip ci]"
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            echo "push failed, retry $attempt"
+            sleep $((attempt * 5))
+          done
+          exit 1
+
+      - name: Text me that it failed
+        if: failure()
+        run: python -m src.deliver --failure --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"

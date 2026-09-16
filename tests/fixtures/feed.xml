@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel><title>Fixture Feed</title><link>https://example.org</link>
+<item><title>Shopify raises Plus pricing for merchants in Europe</title><link>https://example.org/shopify-plus?utm_source=rss&amp;utm_medium=feed#top</link><pubDate>Tue, 15 Sep 2026 09:00:00 GMT</pubDate><author>Jane Doe</author><description>&lt;p&gt;Shopify told Plus merchants that monthly pricing rises 12 percent from 1 November 2026. Merchandising and PIM integrations are unaffected.&lt;/p&gt;</description></item>
+<item><title>Klaviyo adds agentic workflows to lifecycle marketing suite</title><link>https://example.org/klaviyo-agents/</link><pubDate>Tue, 15 Sep 2026 11:30:00 GMT</pubDate><description>Klaviyo launched agentic workflows that draft and send lifecycle marketing flows, with attribution reporting built in.</description></item>
+<item><title>Workwear brand Snickers opens B2B e-commerce portal in Germany</title><link>https://example.org/snickers-b2b</link><pubDate>Tue, 15 Sep 2026 06:00:00 GMT</pubDate><description>Hultafors Group launched a B2B e-commerce portal for its workwear brands, targeting European apparel resellers with product content feeds.</description></item>
+<item><title>Local sports club wins regional final</title><link>https://example.org/sports</link><pubDate>Tue, 15 Sep 2026 07:00:00 GMT</pubDate><description>Nothing to do with e-commerce at all.</description></item>
+<item><title>Old article from last year</title><link>https://example.org/old</link><pubDate>Mon, 15 Sep 2025 07:00:00 GMT</pubDate><description>Conversion optimisation guide, but a year old.</description></item>
+<item><title>Same Shopify article, tracked link</title><link>https://example.org/shopify-plus/?fbclid=abc</link><pubDate>Tue, 15 Sep 2026 10:00:00 GMT</pubDate><description>Duplicate by canonical URL.</description></item>
+</channel></rss>

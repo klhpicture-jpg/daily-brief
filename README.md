@@ -1,0 +1,89 @@
+# daily-brief
+
+A personal daily intelligence digest. Every morning a GitHub Action collects
+RSS (podcasts and web watch come in later phases), scores every item with a
+cheap model against `config/topics.yaml`, has a stronger model write only the
+survivors, publishes a mobile-first page to GitHub Pages and texts a three
+line teaser with the link.
+
+Read on a phone, in under two minutes. That constraint drives every decision.
+
+## Setup in 5 steps
+
+1. **Secrets.** In the repo, Settings, Secrets and variables, Actions: add the secrets from the table below.
+2. **Pages.** Settings, Pages: source "Deploy from a branch", branch `main`, folder `/docs`. Note: on a free personal GitHub plan, Pages only works on public repos. Either make the repo public (secrets stay secret, the digest pages do not) or use GitHub Pro.
+3. **Models.** Run `python scripts/check_models.py` locally with your `OPENAI_API_KEY` and set the repo variables `OPENAI_RANK_MODEL` and `OPENAI_WRITE_MODEL` (Settings, Variables) to IDs that exist. Defaults are `gpt-5-nano` and `gpt-5`.
+4. **Sources.** Run the "check sources" workflow (Actions tab) once and delete any feed it flags.
+5. **First run.** Run the "digest" workflow with `dry_run` checked, open the run log and read the message it would have sent. Then run it unchecked. The scheduled run is 05:00 UTC daily (07:00 Copenhagen in summer, 06:00 in winter, cron does not follow DST).
+
+Local run: `pip install -r requirements.txt`, copy `.env.example` to `.env`, export it, then
+`python -m src.main --dry-run` (real feeds, real LLM, no delivery, page in a temp folder) or
+`python -m src.main --dry-run --no-llm` (free, stubbed ranking and writing). Tests: `pip install pytest && python -m pytest`.
+
+## Secrets
+
+| Secret | Used for |
+|---|---|
+| `OPENAI_API_KEY` | ranking, writing, transcription (phase 2), feedback rollup |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` | delivery |
+| `TWILIO_FROM`, `TWILIO_TO` | sender number and your phone, E.164 (`+45...`) |
+| `TWILIO_CONTENT_SID` | only for WhatsApp, the approved template SID (`HX...`) |
+| `FIRECRAWL_API_KEY` | web watch (phase 3) |
+| `APIFY_TOKEN` | LinkedIn (phase 4) |
+
+Repo variables (not secrets): `DELIVERY_CHANNEL` (`sms`, the default, or `whatsapp`), `OPENAI_RANK_MODEL`, `OPENAI_WRITE_MODEL`, `OPENAI_TRANSCRIBE_MODEL`.
+
+## Add a source
+
+Add one line to `config/sources.yaml` under `rss` (or `podcasts` from phase 2) and commit.
+A broken source never kills the run: it is listed in the page footer instead.
+Prefer feeds over scraping, always. Only feedless pages go under `web_watch` (phase 3).
+
+## Change topics
+
+Edit `config/topics.yaml`. The ranker and the writer see the file verbatim, so write it
+like a brief to a smart assistant: who you are, what you care about in priority order, what
+to exclude. No code changes, the next run picks it up.
+
+## Feedback loop
+
+Every item on the page has a thumbs up and a thumbs down link. Tapping one opens a
+prefilled GitHub issue (label `feedback-good` or `feedback-bad`, title = item, body = item
+hash). Just hit submit. Every Monday `learn.yml` reads the open feedback issues, asks the
+writing model to fold them into 5 to 10 rules in `config/learned.md`, closes the issues and
+commits. The ranker reads `learned.md` on every run, so the digest gets sharper instead of
+getting muted. Edit `learned.md` by hand any time.
+
+## Delivery
+
+SMS is the working default. WhatsApp is behind `DELIVERY_CHANNEL=whatsapp`:
+business-initiated WhatsApp messages outside a 24 hour session window must use a
+pre-approved Content Template, sent with `ContentSid` and `ContentVariables` (plain `Body`
+fails with Twilio error 63016 since April 2025). Create a template in the Twilio Content
+Template Builder with five variables (`{{1}}` date and headline, `{{2}}` to `{{4}}` the
+three lines, `{{5}}` the "N more" link), get it approved by Meta, and set
+`TWILIO_CONTENT_SID`. Meta bills per template message (utility or marketing category),
+check current pricing before switching.
+
+## Cost
+
+The page footer shows the estimated LLM cost per run, from token counts times the price
+table in `src/llm.py`. Verify those prices against the OpenAI pricing page; unknown models
+are counted as zero with a warning in the log. A typical run with 15 feeds is a few cents.
+
+## Layout
+
+```
+config/topics.yaml     what I care about, the highest leverage file
+config/sources.yaml    feeds, pages, accounts
+config/learned.md      auto-generated from feedback
+src/collectors/        one module per source type, all emit the same Item
+src/rank.py            stage 1, cheap model scores everything
+src/digest.py          stage 2, strong model writes the survivors
+src/render.py          the page
+src/deliver.py         Twilio
+src/main.py            orchestrator
+state/seen.json        hashes already shown, committed back by the workflow
+state/runs.jsonl       one line per run: counts, errors, cost
+docs/                  GitHub Pages output, one file per day plus index and archive
+```
