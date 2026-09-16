@@ -8,7 +8,7 @@ def test_message_stays_under_480():
     lines = ["x" * 300, "y" * 300, "z" * 300]
     msg = deliver.build_message("Tue 16 Sep", "h" * 200, lines, 9, "https://klhpicture-jpg.github.io/daily-brief/2026-09-16.html")
     assert len(msg) <= 480
-    assert msg.endswith("+9 more: https://klhpicture-jpg.github.io/daily-brief/2026-09-16.html")
+    assert msg.endswith("+9 mere: https://klhpicture-jpg.github.io/daily-brief/2026-09-16.html")
     assert msg.count("\n") == 6
 
 

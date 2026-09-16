@@ -41,7 +41,7 @@ def build_message(date_label: str, headline: str, lines: list[str], more: int, p
     while True:
         numbered = "\n".join(f"{i + 1}. {_fit_line(x, limit)}" for i, x in enumerate(lines))
         head = f"{date_label} - {_fit_line(headline, 60)}"
-        tail = f"+{more} more: {page_url}" if more > 0 else f"Full page: {page_url}"
+        tail = f"+{more} mere: {page_url}" if more > 0 else f"Hele siden: {page_url}"
         parts = [head]
         if numbered:
             parts.append(numbered)
@@ -129,12 +129,12 @@ def send_digest(date_label: str, headline: str, lines: list[str], more: int, pag
     variables = {"1": f"{date_label} - {headline}"}
     for i in range(3):
         variables[str(i + 2)] = _fit_line(lines[i], LINE_MAX) if i < len(lines) else ""
-    variables["5"] = f"+{more} more: {page_url}"
+    variables["5"] = f"+{more} mere: {page_url}"
     return send(message, variables)
 
 
 def send_failure(run_url: str) -> str:
-    message = f"daily-brief failed. Run log: {run_url}"
+    message = f"daily-brief fejlede. Log: {run_url}"
     return send(message, {"1": message, "2": "", "3": "", "4": "", "5": ""}, silent=True)
 
 
@@ -148,7 +148,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.failure:
         send_failure(args.run_url or "(no run url)")
     elif args.test:
-        send("daily-brief test message. If you can read this, delivery works.", silent=True)
+        send("daily-brief testbesked. Kan du læse det her, virker leveringen.", silent=True)
     else:
         parser.print_help()
         return 2

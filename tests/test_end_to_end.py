@@ -37,7 +37,7 @@ def test_dry_run_no_llm_writes_a_page(tmp_path, monkeypatch):
     rc = main(["--dry-run", "--no-llm", "--since", "2026-09-14", "--out", str(tmp_path / "docs")])
     assert rc == 0
     index = (tmp_path / "docs" / "index.html").read_text()
-    assert "Stub digest" in index
+    assert "Stub-digest" in index and 'lang="da"' in index and "onsdag 16. september 2026" in index
     assert "Shopify raises Plus pricing" in index
     assert (state_dir / "seen.json").read_text() == json.dumps({"last_run": None, "seen": {}}), "dry run must not touch state"
 

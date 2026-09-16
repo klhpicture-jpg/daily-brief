@@ -10,6 +10,12 @@ from urllib.parse import quote
 from .schema import Item
 
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}\.html$")
+DAYS = ["mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag", "søndag"]
+MONTHS = ["januar", "februar", "marts", "april", "maj", "juni", "juli", "august", "september", "oktober", "november", "december"]
+
+
+def danish_date(day: date) -> str:
+    return f"{DAYS[day.weekday()]} {day.day}. {MONTHS[day.month - 1]} {day.year}"
 
 CSS = """
 :root{--bg:#fbfaf7;--fg:#1c1b19;--muted:#6b675f;--line:#e4e0d8;--accent:#0b5fa5;--why-bg:#f1efe8;--why-fg:#3a3730}
@@ -51,11 +57,11 @@ def _esc(value) -> str:
 def relative_time(then: datetime, now: datetime) -> str:
     seconds = max(0, int((now - then).total_seconds()))
     if seconds < 3600:
-        return f"{max(1, seconds // 60)}m ago"
+        return f"{max(1, seconds // 60)} min siden"
     if seconds < 86400:
-        return f"{seconds // 3600}h ago"
+        return f"{seconds // 3600} t siden"
     days = seconds // 86400
-    return f"{days}d ago" if days < 14 else then.strftime("%d %b")
+    return f"{days} d siden" if days < 14 else f"{then.day}. {MONTHS[then.month - 1][:3]}"
 
 
 def feedback_links(repo: str, item: Item) -> tuple[str, str]:
@@ -70,7 +76,7 @@ def render_item(entry: dict, item: Item, repo: str, now: datetime) -> str:
     good, bad = feedback_links(repo, item)
     when = relative_time(item.published_at, now)
     author = f" · {_esc(item.author)}" if item.author else ""
-    keep = f'<p class="keep"><span>Remember</span>{_esc(entry.get("remember"))}</p>' if entry.get("remember") else ""
+    keep = f'<p class="keep"><span>Husk</span>{_esc(entry.get("remember"))}</p>' if entry.get("remember") else ""
     why = f'<p class="why">{_esc(entry.get("why_it_matters"))}</p>' if entry.get("why_it_matters") else ""
     return (
         f'<article id="i-{item.hash[:12]}">'
@@ -78,9 +84,9 @@ def render_item(entry: dict, item: Item, repo: str, now: datetime) -> str:
         f'<p class="meta">{_esc(item.source)}{author} · {when}</p>'
         f'<p class="summary">{_esc(entry.get("summary"))}</p>'
         f"{keep}{why}"
-        f'<p class="links"><a href="{_esc(item.url)}">Source</a>'
-        f'<a class="fb" href="{good}" title="More like this">&#128077;</a>'
-        f'<a href="{bad}" title="Less like this">&#128078;</a></p>'
+        f'<p class="links"><a href="{_esc(item.url)}">Kilde</a>'
+        f'<a class="fb" href="{good}" title="Mere af det her">&#128077;</a>'
+        f'<a href="{bad}" title="Mindre af det her">&#128078;</a></p>'
         "</article>"
     )
 
@@ -99,8 +105,8 @@ def render_page(
 ) -> str:
     now = now or datetime.now(timezone.utc)
     by_hash = {it.hash: it for it in items}
-    headline = digest.get("headline") or "Nothing new today"
-    date_label = day.strftime("%A %d %B %Y")
+    headline = digest.get("headline") or "Intet nyt i dag"
+    date_label = danish_date(day)
 
     top3 = ""
     if digest.get("top3"):
@@ -117,24 +123,24 @@ def render_page(
         if rows:
             body.append(f"<section><h2>{_esc(section['title'])}</h2>{''.join(rows)}</section>")
     if not body:
-        body.append('<p class="empty">Nothing cleared the bar today. Collectors ran, the ranker found nothing worth your time.</p>')
+        body.append('<p class="empty">Intet kom over barren i dag. Kilderne kørte, rangeringen fandt ikke noget der var din tid værd.</p>')
 
     failed = "".join(f"<li>{_esc(e)}</li>" for e in errors)
-    failed_block = f"<p>Collectors that failed:</p><ul>{failed}</ul>" if errors else "<p>All collectors ran.</p>"
+    failed_block = f"<p>Kilder der fejlede:</p><ul>{failed}</ul>" if errors else "<p>Alle kilder kørte.</p>"
     stats = (
-        f"{counts.get('collected', 0)} collected, {counts.get('new', 0)} new, "
-        f"{counts.get('ranked', 0)} ranked, {counts.get('kept', 0)} kept. Estimated cost ${cost_usd:.3f}."
+        f"{counts.get('collected', 0)} hentet, {counts.get('new', 0)} nye, "
+        f"{counts.get('ranked', 0)} rangeret, {counts.get('kept', 0)} valgt. Anslået pris ${cost_usd:.3f}."
     )
 
     return (
-        "<!DOCTYPE html>\n<html lang=\"en\"><head><meta charset=\"utf-8\">"
+        "<!DOCTYPE html>\n<html lang=\"da\"><head><meta charset=\"utf-8\">"
         f"<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
         f"<meta name=\"color-scheme\" content=\"light dark\"><title>{_esc(day.isoformat())} · {_esc(headline)}</title>"
         f"<style>{CSS.strip()}</style></head><body><main>"
         f"<header><p class=\"date\">{_esc(date_label)}</p><h1>{_esc(headline)}</h1>{top3}</header>"
         f"{''.join(body)}"
         f"<footer><p>{_esc(stats)}</p>{failed_block}"
-        f"<p><a href=\"{_esc(archive_href)}\">Archive</a> · <a href=\"https://github.com/{_esc(repo)}\">Repo</a></p></footer>"
+        f"<p><a href=\"{_esc(archive_href)}\">Arkiv</a> · <a href=\"https://github.com/{_esc(repo)}\">Repo</a></p></footer>"
         "</main></body></html>\n"
     )
 
@@ -143,12 +149,12 @@ def render_archive(docs_dir: Path) -> str:
     days = sorted((p.stem for p in docs_dir.glob("*.html") if DATE_RE.match(p.name)), reverse=True)
     rows = "".join(f'<li><a href="{d}.html">{d}</a></li>' for d in days)
     return (
-        "<!DOCTYPE html>\n<html lang=\"en\"><head><meta charset=\"utf-8\">"
+        "<!DOCTYPE html>\n<html lang=\"da\"><head><meta charset=\"utf-8\">"
         "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
-        "<meta name=\"color-scheme\" content=\"light dark\"><title>Daily brief archive</title>"
-        f"<style>{CSS.strip()}</style></head><body><main><header><h1>Archive</h1></header>"
-        f"<ul>{rows or '<li>No digests yet.</li>'}</ul>"
-        "<footer><p><a href=\"index.html\">Latest</a></p></footer></main></body></html>\n"
+        "<meta name=\"color-scheme\" content=\"light dark\"><title>Daily brief, arkiv</title>"
+        f"<style>{CSS.strip()}</style></head><body><main><header><h1>Arkiv</h1></header>"
+        f"<ul>{rows or '<li>Ingen udgaver endnu.</li>'}</ul>"
+        "<footer><p><a href=\"index.html\">Seneste</a></p></footer></main></body></html>\n"
     )
 
 

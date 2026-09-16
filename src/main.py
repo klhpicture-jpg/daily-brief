@@ -10,6 +10,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from . import config, deliver, digest, rank, render
+from .render import DAYS, MONTHS
 from .collectors import run_all
 from .llm import Usage
 from .schema import utcnow
@@ -107,14 +108,15 @@ def run(args: argparse.Namespace) -> int:
     # 8. Deliver.
     lines = [t["line"] for t in written.get("top3", [])]
     more = max(0, len(kept) - len(lines))
-    message = deliver.build_message(today.strftime("%a %d %b"), written["headline"], lines, more, page_url)
+    date_label = f"{DAYS[today.weekday()][:3]} {today.day}. {MONTHS[today.month - 1][:3]}"
+    message = deliver.build_message(date_label, written["headline"], lines, more, page_url)
     log.info("message (%d chars):\n%s", len(message), message)
     delivery_error = None
     if args.dry_run:
         log.info("dry run: not delivering, not writing state")
     else:
         try:
-            deliver.send_digest(today.strftime("%a %d %b"), written["headline"], lines, more, page_url)
+            deliver.send_digest(date_label, written["headline"], lines, more, page_url)
         except Exception as exc:  # noqa: BLE001, state must still be saved
             delivery_error = f"delivery: {type(exc).__name__}: {str(exc)[:200]}"
             log.error(delivery_error)
