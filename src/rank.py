@@ -37,7 +37,7 @@ The reader's brief (verbatim from their topics file):
 {learned_block}
 Return strict JSON only, shaped exactly like:
 {{"scores": [{{"i": 0, "score": 3, "why": "one short sentence"}}, ...]}}
-Include every input index exactly once. "why" is one concrete sentence, max 20 words, no em dashes."""
+Include every input index exactly once. "why" is one concrete sentence in Danish, max 20 words, no em dashes."""
 
 
 def build_system_prompt(topics_text: str, learned_text: str = "") -> str:

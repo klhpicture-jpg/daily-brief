@@ -1,36 +1,36 @@
-# What I want to know about, in priority order.
-# The ranker and the writer see this file verbatim. Write it like you would brief a smart assistant.
+# Hvad jeg vil vide, i prioriteret rækkefølge.
+# Rangeringen og skriveren ser filen ordret. Skriv den som en briefing til en skarp assistent.
 me: >
-  Marketing Manager at Creative Force (workflow platform for high-volume e-commerce content
-  production) and Dreem (virtual, AI-generated product imagery for retailers). I own go-to-market
-  for the combined offering to enterprise fashion, beauty and lifestyle retailers with in-house
-  studios in Europe and North America. I build my own AI-driven outreach systems (Clay, n8n,
-  HubSpot, Heyreach, coding agents), so I follow AI models and agent tooling as a practitioner,
-  not a spectator. I am Danish, work with Germans and other Europeans every week, and follow
-  football, Formula 1, pro cycling and tennis. I read this on my phone in two minutes. Give me
-  what I can act on or talk about today, not general news.
+  Marketing Manager hos Creative Force (workflow-platform til e-commerce content production i stor
+  skala) og Dreem (virtuel, AI-genereret produktfoto til retailere). Jeg ejer go-to-market for det
+  samlede tilbud til enterprise fashion-, beauty- og lifestyle-retailere med egne studier i Europa og
+  Nordamerika. Jeg bygger selv AI-drevne outreach-systemer (Clay, n8n, HubSpot, Heyreach,
+  coding agents), så jeg følger AI-modeller og agent-værktøjer som praktiker, ikke tilskuer. Jeg er
+  dansk, arbejder med tyskere og andre europæere hver uge, og følger fodbold, Formel 1, cykling og
+  tennis. Jeg læser det her på telefonen på to minutter. Giv mig det jeg kan handle på eller tale
+  om i dag, ikke generelle nyheder. Alt skal skrives på dansk, uanset kildens sprog.
 
 priorities:
-  - name: AI models and agent tooling
+  - name: AI-modeller og agent-værktøjer
     weight: high
-    include: [frontier model releases and comparisons, open-weight models, Claude Code, Codex, Cursor, MCP, agent frameworks and harnesses, AI engineering, prompt injection and safety findings that change how to build]
-  - name: AI in marketing and content production
+    include: [nye frontier-modeller og sammenligninger, open-weight-modeller, Claude Code, Codex, Cursor, MCP, agent-frameworks, AI engineering, prompt injection og sikkerhedsfund der ændrer hvordan man bygger]
+  - name: AI i marketing og content production
     weight: high
-    include: [AI image and video generation for product content, virtual photography, creative automation, AI in go-to-market and martech, SEO and AEO under AI search]
-  - name: Retail and e-commerce content operations
+    include: [AI-billede og -video til produktindhold, virtuel fotografering, creative automation, AI i go-to-market og martech, SEO og AEO under AI-søgning]
+  - name: Retail og e-commerce content operations
     weight: high
-    include: [fashion beauty and lifestyle retailers, in-house studios, product content and PIM, B2B e-commerce, marketplaces, Shopify and platform changes]
-  - name: Europe and Germany
+    include: [fashion- beauty- og lifestyle-retailere, in-house studier, produktindhold og PIM, B2B e-commerce, marketplaces, Shopify og platformændringer]
+  - name: Europa og Tyskland
     weight: medium
-    include: [EU policy that touches business or AI, German politics and economy, Danish news, what Germans are talking about this week]
-  - name: Sports
+    include: [EU-politik der rammer erhvervsliv eller AI, tysk politik og økonomi, danske nyheder, det tyskerne taler om i denne uge]
+  - name: Sport
     weight: medium
-    include: [football (Premier League, Bundesliga, Superliga, Denmark national team), Formula 1, pro cycling and Danish riders, tennis Grand Slams, the story behind the result rather than the result itself]
+    include: [fodbold (Premier League, Bundesliga, Superliga, landsholdet), Formel 1, cykling og danske ryttere, tennis Grand Slams, historien bag resultatet frem for resultatet selv]
 
 exclude:
-  - funding rounds under 50M USD with no product angle
-  - US politics unless it changes EU or e-commerce rules
-  - generic "AI will change everything" think pieces with no specifics
-  - press releases and sponsored content with no new information
-  - match reports and scores with no story behind them
-  - transfer rumours without a named source
+  - funding-runder under 50M USD uden produktvinkel
+  - amerikansk politik medmindre det ændrer EU- eller e-commerce-regler
+  - generiske "AI ændrer alt"-klummer uden konkret indhold
+  - pressemeddelelser og sponsoreret indhold uden ny information
+  - kampreferater og resultater uden en historie bag
+  - transferrygter uden navngiven kilde

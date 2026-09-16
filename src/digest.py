@@ -10,12 +10,14 @@ from .schema import Item
 
 log = logging.getLogger("digest")
 
-PODCAST_SECTION = "From the podcasts"
-OTHER_SECTION = "Also worth a look"
+PODCAST_SECTION = "Fra podcasts"
+OTHER_SECTION = "Også værd at se"
 HEADLINE_MAX = 60
 LINE_MAX = 90
 
 WRITING_RULES = """Writing rules:
+- Write everything in Danish (Danish spelling and idiom, never Norwegian or Swedish), whatever
+  the source language. Keep names of people, companies, products and titles as they are.
 - Tell each item as a short story, not a headline. Three beats: what happened, what came
   before or around it (the context a smart outsider is missing), and what changes now.
   Name the actors. 60 to 110 words. Use the full article text, not just the title.
@@ -29,7 +31,7 @@ WRITING_RULES = """Writing rules:
 - Lead with the concrete. Delete any sentence that would survive unchanged in someone
   else's digest. No filler openers like "In today's fast moving landscape".
 - If an item is thin, say so in one line rather than padding it.
-- No em dashes. Use commas, periods or parentheses. Plain text only, no markdown."""
+- No em dashes (tankestreger). Use commas, periods or parentheses. Plain text only, no markdown."""
 
 SYSTEM_TEMPLATE = """You write a short daily digest for one reader. They read it on a phone in under two minutes.
 
@@ -122,7 +124,7 @@ def normalize(data: dict, items: list[Item], topics: dict) -> dict:
             sections.setdefault(target, []).append(
                 {
                     "item_hash": h,
-                    "summary": _clip(raw.get("summary") or "", 900) or "No summary produced.",
+                    "summary": _clip(raw.get("summary") or "", 900) or "Intet resumé produceret.",
                     "remember": _clip(raw.get("remember") or "", 140),
                     "why_it_matters": _clip(raw.get("why_it_matters") or "", 320),
                 }
@@ -135,7 +137,7 @@ def normalize(data: dict, items: list[Item], topics: dict) -> dict:
         log.warning("writer skipped %s, adding a one-line fallback", it.title[:60])
         target = PODCAST_SECTION if it.source_type == "podcast" else OTHER_SECTION
         sections.setdefault(target, []).append(
-            {"item_hash": it.hash, "summary": _clip(it.text, 240) or "Thin item, nothing beyond the title.", "remember": "", "why_it_matters": _clip(it.why, 240)}
+            {"item_hash": it.hash, "summary": _clip(it.text, 240) or "Tyndt item, intet ud over overskriften.", "remember": "", "why_it_matters": _clip(it.why, 240)}
         )
 
     top3: list[dict] = []
@@ -158,7 +160,7 @@ def normalize(data: dict, items: list[Item], topics: dict) -> dict:
 
     headline = _clip(data.get("headline") or "", HEADLINE_MAX)
     if not headline:
-        headline = _clip(top3[0]["line"], HEADLINE_MAX) if top3 else "Nothing new today"
+        headline = _clip(top3[0]["line"], HEADLINE_MAX) if top3 else "Intet nyt i dag"
     return {
         "headline": headline,
         "top3": top3,
@@ -178,7 +180,7 @@ def write_fake(items: list[Item], topics: dict) -> dict:
                 break
         sections.append({"title": title, "items": [{"item_hash": it.hash, "summary": it.text[:300], "remember": it.title[:120], "why_it_matters": it.why}]})
     data = {
-        "headline": "Stub digest, no LLM was used",
+        "headline": "Stub-digest, ingen LLM brugt",
         "top3": [{"item_hash": it.hash, "line": it.title} for it in items[:3]],
         "sections": sections,
     }
@@ -187,7 +189,7 @@ def write_fake(items: list[Item], topics: dict) -> dict:
 
 def write_digest(items: list[Item], topics_text: str, topics: dict, model: str, usage: Usage) -> dict:
     if not items:
-        return {"headline": "Nothing new today", "top3": [], "sections": []}
+        return {"headline": "Intet nyt i dag", "top3": [], "sections": []}
     system = build_system_prompt(topics_text, topics)
     data = chat_json(model, system, _payload(items), usage, max_output_tokens=16000, reasoning_effort="low", attempts=3)
     return normalize(data, items, topics)
