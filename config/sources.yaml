@@ -41,7 +41,6 @@ rss:
   # Europe
   - { name: "DW English", url: "https://rss.dw.com/xml/rss-en-all" }
   - { name: "Politico Europe", url: "https://www.politico.eu/feed/" }
-  - { name: "Guardian Europe", url: "https://www.theguardian.com/world/europe-news/rss" }
   - { name: "Tagesschau", url: "https://www.tagesschau.de/xml/rss2" }
   - { name: "DR Nyheder", url: "https://www.dr.dk/nyheder/service/feeds/allenyheder" }
 
@@ -65,7 +64,7 @@ rss:
 
   # Dropped 2026-09-16: Marketing Brew (404), FashionUnited UK (422), Shopify Blog (HTML, not a feed),
   # Search Engine Land, Marketing Week and The Batch (403 bot wall), Tipsbladet (broken XML), Bold.dk (404),
-  # HubSpot Marketing Blog and The Verge (low signal).
+  # HubSpot Marketing Blog, The Verge and Guardian Europe (low signal, mostly breaking news).
 
 podcasts:
   # Collected from show notes today. `transcribe: true` turns on full transcription in phase 2.

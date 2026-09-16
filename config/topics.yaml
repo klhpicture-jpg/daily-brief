@@ -21,13 +21,19 @@ priorities:
     weight: high
     include: [fashion- beauty- og lifestyle-retailere, in-house studier, produktindhold og PIM, B2B e-commerce, marketplaces, Shopify og platformændringer]
   - name: Europa og Tyskland
-    weight: medium
-    include: [EU-politik der rammer erhvervsliv eller AI, tysk politik og økonomi, danske nyheder, det tyskerne taler om i denne uge]
+    weight: low
+    include: [EU-regulering der konkret ændrer noget for e-commerce eller AI (AI Act, DSA, produktregler), tysk økonomi og erhvervsliv, det tyskere og danskere faktisk taler om socialt i denne uge]
+    note: >
+      Kun ting der ændrer min uge eller min næste samtale med en tysker. Ikke løbende dækning.
+      Én god forklarende historie om ugen slår ti breaking-nyheder.
   - name: Sport
     weight: medium
     include: [fodbold (Premier League, Bundesliga, Superliga, landsholdet), Formel 1, cykling og danske ryttere, tennis Grand Slams, historien bag resultatet frem for resultatet selv]
 
 exclude:
+  - breaking news og løbende dækning af krig, konflikter, angreb og forhandlinger. Det ændrer sjældent min hverdag. Score 1 medmindre det direkte rammer europæisk erhvervsliv eller forsyningskæder
+  - EU-topmøder, udtalelser, forslag og diplomati uden en vedtaget beslutning der rammer e-commerce, AI eller tysk erhvervsliv
+  - dagsaktuel partipolitik, meningsmålinger og skandaler
   - funding-runder under 50M USD uden produktvinkel
   - amerikansk politik medmindre det ændrer EU- eller e-commerce-regler
   - generiske "AI ændrer alt"-klummer uden konkret indhold
