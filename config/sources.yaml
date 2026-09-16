@@ -1,27 +1,25 @@
 # Sources. Add a line, commit, done. No code changes needed.
 # A broken source never kills the run: it shows up in the page footer instead.
 #
-# VERIFY: the build session had no network access to these hosts, so none of
-# the URLs below were checked live. Run the "check sources" workflow (Actions
-# tab) or `python scripts/check_feeds.py` once, and remove anything it flags.
+# Checked with the "check sources" workflow on 2026-09-16. Run it again after
+# editing this file (Actions tab), or `python scripts/check_feeds.py` locally.
 
 rss:
   - { name: "Modern Retail", url: "https://www.modernretail.co/feed/" }
   - { name: "Retail Dive", url: "https://www.retaildive.com/feeds/news/" }
-  - { name: "Marketing Brew", url: "https://www.marketingbrew.com/feed" }
   - { name: "Digiday", url: "https://digiday.com/feed/" }
   - { name: "Practical Ecommerce", url: "https://www.practicalecommerce.com/feed" }
   - { name: "Ecommerce News Europe", url: "https://ecommercenews.eu/feed/" }
   - { name: "Internet Retailing", url: "https://internetretailing.net/feed/" }
   - { name: "Just Style", url: "https://www.just-style.com/feed/" }
-  - { name: "FashionUnited UK", url: "https://fashionunited.uk/rss/news" }
   - { name: "MarTech", url: "https://martech.org/feed/" }
   - { name: "Search Engine Land", url: "https://searchengineland.com/feed" }
   - { name: "Marketing Week", url: "https://www.marketingweek.com/feed/" }
   - { name: "HubSpot Marketing Blog", url: "https://blog.hubspot.com/marketing/rss.xml" }
-  - { name: "Shopify Blog", url: "https://www.shopify.com/blog.atom" }
   - { name: "OpenAI News", url: "https://openai.com/news/rss.xml" }
   - { name: "The Verge", url: "https://www.theverge.com/rss/index.xml" }
+  # Dropped 2026-09-16, no feed at the URL tried. Re-add if you find the right one:
+  # Marketing Brew (404 at /feed), FashionUnited UK (422 at /rss/news), Shopify Blog (HTML, not a feed, at /blog.atom)
 
 podcasts:
   # Phase 2. Episodes longer than max_minutes are skipped (transcription cost).

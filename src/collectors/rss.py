@@ -15,25 +15,35 @@ from ..schema import Item, make_item, strip_html, truncate_text, utcnow
 log = logging.getLogger("collectors.rss")
 
 USER_AGENT = "daily-brief/0.1 (personal RSS digest; +https://github.com/klhpicture-jpg/daily-brief)"
+# Some publishers (Cloudflare fronted sites, Substack) answer 403 to anything that
+# is not a browser. We try the polite agent first and fall back once.
+BROWSER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36"
 FEED_TIMEOUT = 15
 BODY_TIMEOUT = 10
 SUMMARY_IS_ENOUGH = 600      # chars; above this, skip the body fetch entirely
 MAX_ENTRIES_PER_FEED = 25
 
 
+def fetch(url: str, timeout: int = FEED_TIMEOUT) -> requests.Response:
+    """GET with the polite agent, retried once with a browser agent on 403."""
+    resp = requests.get(url, timeout=timeout, headers={"User-Agent": USER_AGENT})
+    if resp.status_code == 403:
+        log.info("%s answered 403, retrying with a browser user agent", url)
+        resp = requests.get(url, timeout=timeout, headers={"User-Agent": BROWSER_AGENT, "Accept": "*/*"})
+    resp.raise_for_status()
+    return resp
+
+
 def _read_feed(url: str) -> bytes:
     if url.startswith("file://"):
         return Path(url[len("file://"):]).read_bytes()
-    resp = requests.get(url, timeout=FEED_TIMEOUT, headers={"User-Agent": USER_AGENT})
-    resp.raise_for_status()
-    return resp.content
+    return fetch(url).content
 
 
 def fetch_body(url: str) -> str:
     """Full article text, or empty string. Never raises."""
     try:
-        resp = requests.get(url, timeout=BODY_TIMEOUT, headers={"User-Agent": USER_AGENT})
-        resp.raise_for_status()
+        resp = fetch(url, timeout=BODY_TIMEOUT)
         text = trafilatura.extract(resp.text, include_comments=False, include_tables=False, url=url)
         return text or ""
     except (requests.RequestException, ValueError) as exc:

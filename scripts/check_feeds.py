@@ -16,16 +16,16 @@ import requests
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src import config  # noqa: E402
-from src.collectors.rss import USER_AGENT  # noqa: E402
+from src.collectors.rss import fetch  # noqa: E402
 
 
 def check(url: str, want_audio: bool) -> tuple[bool, str]:
     try:
-        resp = requests.get(url, timeout=20, headers={"User-Agent": USER_AGENT})
+        resp = fetch(url, timeout=20)
+    except requests.HTTPError as exc:
+        return False, f"HTTP {exc.response.status_code}"
     except requests.RequestException as exc:
         return False, f"request failed: {type(exc).__name__}: {exc}"
-    if resp.status_code != 200:
-        return False, f"HTTP {resp.status_code}"
     parsed = feedparser.parse(resp.content)
     if parsed.bozo and not parsed.entries:
         return False, f"not a feed: {parsed.bozo_exception}"
