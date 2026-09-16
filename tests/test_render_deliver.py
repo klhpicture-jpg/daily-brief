@@ -52,7 +52,7 @@ def test_telegram_send_posts_once(monkeypatch):
     assert deliver.send("hello") == "42"
     assert len(calls) == 1
     assert calls[0][0].endswith("/bot" + "t" + "/sendMessage")
-    assert calls[0][1]["json"] == {"chat_id": "123", "text": "hello", "disable_web_page_preview": False}
+    assert calls[0][1]["json"] == {"chat_id": "123", "text": "hello", "disable_web_page_preview": False, "disable_notification": False}
 
 
 def test_telegram_error_is_raised(monkeypatch):

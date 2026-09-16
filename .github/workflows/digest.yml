@@ -2,7 +2,11 @@ name: digest
 
 on:
   schedule:
-    - cron: "0 5 * * *"   # 07:00 Copenhagen in summer, 06:00 in winter (cron is UTC, no DST)
+    # Target: 18:25 Europe/Copenhagen every day, message on the phone around 18:28.
+    # Cron is UTC and ignores DST, so both candidate hours fire and the
+    # "Only run at 18 local" step lets exactly one of them through.
+    - cron: "25 16 * * *"   # 18:25 CEST (summer)
+    - cron: "25 17 * * *"   # 18:25 CET (winter)
   workflow_dispatch:
     inputs:
       dry_run:
@@ -39,28 +43,45 @@ jobs:
       OPENAI_TRANSCRIBE_MODEL: ${{ vars.OPENAI_TRANSCRIBE_MODEL || 'gpt-4o-mini-transcribe' }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
+      - name: Only run at 18 local time (Europe/Copenhagen)
+        id: gate
+        run: |
+          hour=$(TZ=Europe/Copenhagen date +%H)
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$hour" != "18" ]; then
+            echo "local hour is $hour, not 18, skipping this cron slot"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/checkout@v5
+        if: steps.gate.outputs.run == 'true'
 
       - uses: actions/setup-python@v6
+        if: steps.gate.outputs.run == 'true'
         with:
           python-version: "3.12"
           cache: pip
 
       - name: Install ffmpeg
+        if: steps.gate.outputs.run == 'true'
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
 
       - name: Install dependencies
+        if: steps.gate.outputs.run == 'true'
         run: pip install -r requirements.txt
 
       - name: Ensure feedback labels exist
+        if: steps.gate.outputs.run == 'true'
         continue-on-error: true
         run: python scripts/ensure_labels.py
 
       - name: Build and deliver the digest
+        if: steps.gate.outputs.run == 'true'
         run: python -m src.main ${{ inputs.dry_run == true && '--dry-run' || '' }}
 
       - name: Commit state and pages
-        if: ${{ inputs.dry_run != true }}
+        if: steps.gate.outputs.run == 'true' && inputs.dry_run != true
         run: |
           git config user.name "daily-brief bot"
           git config user.email "actions@users.noreply.github.com"
@@ -78,5 +99,5 @@ jobs:
           exit 1
 
       - name: Message me that it failed
-        if: failure()
+        if: failure() && steps.gate.outputs.run == 'true' 
         run: python -m src.deliver --failure --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"

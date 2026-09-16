@@ -69,14 +69,14 @@ def channel() -> str:
     return value
 
 
-def _send_telegram(message: str) -> str:
+def _send_telegram(message: str, silent: bool = False) -> str:
     token = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
     chat_id = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
     if not token or not chat_id:
         raise RuntimeError("TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID must be set")
     resp = requests.post(
         f"https://api.telegram.org/bot{token}/sendMessage",
-        json={"chat_id": chat_id, "text": message, "disable_web_page_preview": False},
+        json={"chat_id": chat_id, "text": message, "disable_web_page_preview": False, "disable_notification": silent},
         timeout=TELEGRAM_TIMEOUT,
     )
     data = resp.json() if resp.content else {}
@@ -101,10 +101,11 @@ def _addresses() -> tuple[str, str, str]:
     return channel, sender, to
 
 
-def send(message: str, template_variables: dict | None = None) -> str:
-    """Send one message. Returns the provider's message id."""
+def send(message: str, template_variables: dict | None = None, silent: bool = False) -> str:
+    """Send one message. Returns the provider's message id. `silent` skips the
+    phone notification on Telegram (used for failure and test messages)."""
     if channel() == "telegram":
-        return _send_telegram(message)
+        return _send_telegram(message, silent=silent)
     channel_name, sender, to = _addresses()
     client = _client()
     content_sid = os.environ.get("TWILIO_CONTENT_SID", "").strip()
@@ -134,7 +135,7 @@ def send_digest(date_label: str, headline: str, lines: list[str], more: int, pag
 
 def send_failure(run_url: str) -> str:
     message = f"daily-brief failed. Run log: {run_url}"
-    return send(message, {"1": message, "2": "", "3": "", "4": "", "5": ""})
+    return send(message, {"1": message, "2": "", "3": "", "4": "", "5": ""}, silent=True)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -147,7 +148,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.failure:
         send_failure(args.run_url or "(no run url)")
     elif args.test:
-        send("daily-brief test message. If you can read this, delivery works.")
+        send("daily-brief test message. If you can read this, delivery works.", silent=True)
     else:
         parser.print_help()
         return 2

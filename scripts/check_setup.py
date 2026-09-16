@@ -57,7 +57,7 @@ def check_telegram() -> bool:
         print("FAIL the configured chat id is not one of the chats above. Use one of those.")
         return False
     resp = requests.post(f"https://api.telegram.org/bot{token}/sendMessage",
-                         json={"chat_id": chat_id, "text": "daily-brief setup check: Telegram works."}, timeout=15).json()
+                         json={"chat_id": chat_id, "text": "daily-brief setup check: Telegram works.", "disable_notification": True}, timeout=15).json()
     if resp.get("ok"):
         print("OK   test message sent, check your phone")
         return True
