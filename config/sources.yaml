@@ -1,0 +1,47 @@
+# Sources. Add a line, commit, done. No code changes needed.
+# A broken source never kills the run: it shows up in the page footer instead.
+#
+# VERIFY: the build session had no network access to these hosts, so none of
+# the URLs below were checked live. Run the "check sources" workflow (Actions
+# tab) or `python scripts/check_feeds.py` once, and remove anything it flags.
+
+rss:
+  - { name: "Modern Retail", url: "https://www.modernretail.co/feed/" }
+  - { name: "Retail Dive", url: "https://www.retaildive.com/feeds/news/" }
+  - { name: "Marketing Brew", url: "https://www.marketingbrew.com/feed" }
+  - { name: "Digiday", url: "https://digiday.com/feed/" }
+  - { name: "Practical Ecommerce", url: "https://www.practicalecommerce.com/feed" }
+  - { name: "Ecommerce News Europe", url: "https://ecommercenews.eu/feed/" }
+  - { name: "Internet Retailing", url: "https://internetretailing.net/feed/" }
+  - { name: "Just Style", url: "https://www.just-style.com/feed/" }
+  - { name: "FashionUnited UK", url: "https://fashionunited.uk/rss/news" }
+  - { name: "MarTech", url: "https://martech.org/feed/" }
+  - { name: "Search Engine Land", url: "https://searchengineland.com/feed" }
+  - { name: "Marketing Week", url: "https://www.marketingweek.com/feed/" }
+  - { name: "HubSpot Marketing Blog", url: "https://blog.hubspot.com/marketing/rss.xml" }
+  - { name: "Shopify Blog", url: "https://www.shopify.com/blog.atom" }
+  - { name: "OpenAI News", url: "https://openai.com/news/rss.xml" }
+  - { name: "The Verge", url: "https://www.theverge.com/rss/index.xml" }
+
+podcasts:
+  # Phase 2. Episodes longer than max_minutes are skipped (transcription cost).
+  - { name: "Lenny's Podcast", feed: "https://api.substack.com/feed/podcast/10845.rss", max_minutes: 90 }
+  # Candidates, uncomment after scripts/check_feeds.py confirms the feed and audio enclosures:
+  # - { name: "The Modern Retail Podcast", feed: "VERIFY", max_minutes: 60 }
+  # - { name: "Glossy Podcast", feed: "VERIFY", max_minutes: 60 }
+  # - { name: "Marketing Against the Grain", feed: "VERIFY", max_minutes: 60 }
+  # - { name: "Unofficial Shopify Podcast", feed: "VERIFY", max_minutes: 75 }
+
+web_watch:
+  # Phase 3. Firecrawl. Pages with no feed that I still want to know changed.
+  - { name: "Competitor pricing", url: "https://example.com/pricing", mode: changed }
+  - { name: "Competitor newsroom", url: "https://example.com/news", mode: new_links }
+
+linkedin:
+  enabled: false          # turn on in phase 4
+  actor_id: "VERIFY"      # Apify actor ID lives here, not in code
+  profiles: []
+
+twitter:
+  enabled: false          # skip unless I say otherwise
+  handles: []

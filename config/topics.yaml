@@ -1,0 +1,29 @@
+# What I want to know about, in priority order.
+# The ranker sees this verbatim. Write it like you would brief a smart assistant.
+me: >
+  Head of digital growth at a European apparel and workwear company.
+  I own e-commerce, digital marketing and the growth team.
+  I care about things I can act on this quarter, not general tech news.
+
+priorities:
+  - name: E-commerce and DTC operations
+    weight: high
+    include: [conversion optimisation, merchandising, PIM, product content, marketplaces, B2B e-commerce]
+  - name: AI in marketing and content production
+    weight: high
+    include: [AI content generation, creative automation, agentic workflows, martech consolidation]
+  - name: Apparel and workwear industry
+    weight: high
+    include: [European apparel retail, workwear brands, supply chain, sustainability regulation]
+  - name: Growth and demand generation
+    weight: medium
+    include: [paid media shifts, SEO and AEO, lifecycle marketing, attribution]
+  - name: Platform and tooling changes
+    weight: medium
+    include: [Shopify, HubSpot, Google, Meta, Klaviyo product and pricing changes]
+
+exclude:
+  - funding rounds under 50M USD with no product angle
+  - US politics unless it directly changes e-commerce rules
+  - generic "AI will change everything" think pieces with no specifics
+  - press releases with no new information
