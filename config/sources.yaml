@@ -9,8 +9,8 @@
 #   subscribe with the address it gives you, paste the Atom URL here.
 # - Paywalled sites are left out. Most of their podcasts are free and listed below.
 #
-# Run the "check sources" workflow after editing (Actions tab). Feeds marked
-# VERIFY were added from a research doc on 2026-09-16 and not fetched yet.
+# Run the "check sources" workflow after editing (Actions tab).
+# Everything below passed that check on 2026-09-16 unless marked VERIFY.
 
 rss:
   # Retail and e-commerce (verified live 2026-09-16)
@@ -23,30 +23,29 @@ rss:
   - { name: "Just Style", url: "https://www.just-style.com/feed/" }
   - { name: "MarTech", url: "https://martech.org/feed/" }
 
-  # AI, core (VERIFY)
+  # AI, core
   - { name: "Simon Willison", url: "https://simonwillison.net/atom/everything/" }
   - { name: "Interconnects", url: "https://www.interconnects.ai/feed" }
   - { name: "Latent Space", url: "https://www.latent.space/feed" }
   - { name: "One Useful Thing", url: "https://www.oneusefulthing.org/feed" }
   - { name: "OpenAI News", url: "https://openai.com/news/rss.xml" }
-  # AI, bench (VERIFY)
-  - { name: "Import AI", url: "https://importai.substack.com/feed" }
+  # AI, bench
+  - { name: "Import AI", url: "https://jack-clark.net/feed/" }
   - { name: "Ben's Bites", url: "https://www.bensbites.com/feed" }
-  - { name: "The Batch", url: "https://www.deeplearning.ai/the-batch/feed/" }
   - { name: "The Pragmatic Engineer", url: "https://newsletter.pragmaticengineer.com/feed" }
   - { name: "Stratechery (free posts)", url: "https://stratechery.com/feed/" }
-  # AI for marketing and growth (VERIFY)
+  # AI for marketing and growth
   - { name: "Marketing AI Institute", url: "https://www.marketingaiinstitute.com/blog/rss.xml" }
   - { name: "Growth Memo", url: "https://www.growth-memo.com/feed" }
 
-  # Europe (VERIFY)
+  # Europe
   - { name: "DW English", url: "https://rss.dw.com/xml/rss-en-all" }
   - { name: "Politico Europe", url: "https://www.politico.eu/feed/" }
   - { name: "Guardian Europe", url: "https://www.theguardian.com/world/europe-news/rss" }
   - { name: "Tagesschau", url: "https://www.tagesschau.de/xml/rss2" }
   - { name: "DR Nyheder", url: "https://www.dr.dk/nyheder/service/feeds/allenyheder" }
 
-  # Sports (VERIFY, BBC ones are high confidence)
+  # Sports
   - { name: "BBC Football", url: "https://feeds.bbci.co.uk/sport/football/rss.xml" }
   - { name: "BBC Formula 1", url: "https://feeds.bbci.co.uk/sport/formula1/rss.xml" }
   - { name: "BBC Cycling", url: "https://feeds.bbci.co.uk/sport/cycling/rss.xml" }
@@ -56,8 +55,6 @@ rss:
   - { name: "Escape Collective", url: "https://escapecollective.com/feed/" }
   - { name: "kicker", url: "https://newsfeed.kicker.de/news/aktuell" }
   - { name: "Feltet.dk", url: "https://www.feltet.dk/rss" }
-  - { name: "Tipsbladet", url: "https://tipsbladet.dk/rss" }
-  - { name: "Bold.dk", url: "https://bold.dk/rss" }
   - { name: "DR Sporten", url: "https://www.dr.dk/nyheder/service/feeds/sporten" }
 
   # Email-only newsletters. Bridge them with kill-the-newsletter.com and paste the feed URL:
@@ -67,14 +64,16 @@ rss:
   # - { name: "Handelsblatt Morning Briefing", url: "https://kill-the-newsletter.com/feeds/XXXX.xml" }
 
   # Dropped 2026-09-16: Marketing Brew (404), FashionUnited UK (422), Shopify Blog (HTML, not a feed),
-  # Search Engine Land and Marketing Week (403 bot wall), HubSpot Marketing Blog and The Verge (low signal).
+  # Search Engine Land, Marketing Week and The Batch (403 bot wall), Tipsbladet (broken XML), Bold.dk (404),
+  # HubSpot Marketing Blog and The Verge (low signal).
 
 podcasts:
   # Collected from show notes today. `transcribe: true` turns on full transcription in phase 2.
   # Episodes longer than max_minutes are never transcribed.
+  # api.substack.com podcast feeds answer 403; Substack main feeds (Latent Space, Lenny) carry the episodes too.
+  # The Cycling Podcast: no Acast feed found at the slug tried (VERIFY the real one).
   - { name: "The AI Daily Brief", feed: "https://anchor.fm/s/f7cac464/podcast/rss", max_minutes: 30, transcribe: true }
-  - { name: "Latent Space Podcast", feed: "https://api.substack.com/feed/podcast/1084089.rss", max_minutes: 90, transcribe: false }
-  - { name: "Lenny's Podcast", feed: "https://api.substack.com/feed/podcast/10845.rss", max_minutes: 90, transcribe: false }
+  - { name: "Lenny's Newsletter and Podcast", feed: "https://www.lennysnewsletter.com/feed", max_minutes: 90, transcribe: false }
   - { name: "Dwarkesh Podcast", feed: "https://www.dwarkesh.com/feed", max_minutes: 120, transcribe: false }
   - { name: "The Rest Is Politics", feed: "https://feeds.acast.com/public/shows/the-rest-is-politics", max_minutes: 60, transcribe: false }
   - { name: "The Intelligence (Economist)", feed: "https://feeds.acast.com/public/shows/theintelligencepodcast", max_minutes: 30, transcribe: false }
@@ -82,7 +81,6 @@ podcasts:
   - { name: "Guardian Football Weekly", feed: "https://www.theguardian.com/football/series/footballweekly/podcast.xml", max_minutes: 75, transcribe: false }
   - { name: "The Race F1 Podcast", feed: "https://feeds.acast.com/public/shows/the-race-f1-podcast", max_minutes: 60, transcribe: false }
   - { name: "The Tennis Podcast", feed: "https://feeds.acast.com/public/shows/thetennispodcast", max_minutes: 75, transcribe: false }
-  - { name: "The Cycling Podcast", feed: "https://feeds.acast.com/public/shows/thecyclingpodcast", max_minutes: 75, transcribe: false }
 
 web_watch:
   # Phase 3. Firecrawl. Pages with no feed that I still want to know changed.
