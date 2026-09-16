@@ -27,6 +27,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--dry-run", action="store_true", help="no delivery, no state write, page written to a temp path")
     p.add_argument("--no-llm", action="store_true", help="stub the LLM with deterministic fake output")
     p.add_argument("--since", help="collect items published after this date (YYYY-MM-DD)")
+    p.add_argument("--ignore-seen", action="store_true", help="do not drop items already shown (testing)")
     p.add_argument("--out", help="write pages here instead of docs/ (implies nothing else)")
     p.add_argument("-v", "--verbose", action="store_true")
     return p.parse_args(argv)
@@ -69,7 +70,7 @@ def run(args: argparse.Namespace) -> int:
     fresh: list = []
     seen_now: set[str] = set()
     for item in collected:
-        if state.has(item.hash) or item.hash in seen_now:
+        if (state.has(item.hash) and not args.ignore_seen) or item.hash in seen_now:
             continue
         seen_now.add(item.hash)
         fresh.append(item)
@@ -128,6 +129,7 @@ def run(args: argparse.Namespace) -> int:
         "since": since.isoformat(timespec="seconds"),
         "dry_run": args.dry_run,
         "no_llm": args.no_llm,
+        "ignore_seen": args.ignore_seen,
         **counts,
         "errors": errors + ([delivery_error] if delivery_error else []),
         "llm_calls": usage.calls,

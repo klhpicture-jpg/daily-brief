@@ -13,6 +13,14 @@ on:
         description: "No delivery, no state write"
         type: boolean
         default: false
+      since:
+        description: "Collect items published after this date (YYYY-MM-DD). Empty = since last run."
+        type: string
+        default: ""
+      ignore_seen:
+        description: "Include items already shown before (for testing the writing)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -78,7 +86,11 @@ jobs:
 
       - name: Build and deliver the digest
         if: steps.gate.outputs.run == 'true'
-        run: python -m src.main ${{ inputs.dry_run == true && '--dry-run' || '' }}
+        run: >-
+          python -m src.main
+          ${{ inputs.dry_run == true && '--dry-run' || '' }}
+          ${{ inputs.ignore_seen == true && '--ignore-seen' || '' }}
+          ${{ inputs.since != '' && format('--since {0}', inputs.since) || '' }}
 
       - name: Commit state and pages
         if: steps.gate.outputs.run == 'true' && inputs.dry_run != true
