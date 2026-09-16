@@ -1,0 +1,24 @@
+name: check setup
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      OPENAI_RANK_MODEL: ${{ vars.OPENAI_RANK_MODEL || 'gpt-5-nano' }}
+      OPENAI_WRITE_MODEL: ${{ vars.OPENAI_WRITE_MODEL || 'gpt-5' }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Check Telegram and OpenAI secrets
+        run: python scripts/check_setup.py

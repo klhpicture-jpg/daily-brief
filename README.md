@@ -8,13 +8,14 @@ with the link to Telegram (or SMS).
 
 Read on a phone, in under two minutes. That constraint drives every decision.
 
-## Setup in 5 steps
+## Setup in 6 steps
 
 1. **Secrets.** In the repo, Settings, Secrets and variables, Actions: add the secrets from the table below.
 2. **Pages.** Settings, Pages: source "Deploy from a branch", branch `main`, folder `/docs`. Note: on a free personal GitHub plan, Pages only works on public repos. Either make the repo public (secrets stay secret, the digest pages do not) or use GitHub Pro.
 3. **Models.** Run `python scripts/check_models.py` locally with your `OPENAI_API_KEY` and set the repo variables `OPENAI_RANK_MODEL` and `OPENAI_WRITE_MODEL` (Settings, Variables) to IDs that exist. Defaults are `gpt-5-nano` and `gpt-5`.
 4. **Sources.** Run the "check sources" workflow (Actions tab) once and delete any feed it flags.
-5. **First run.** Run the "digest" workflow with `dry_run` checked, open the run log and read the message it would have sent. Then run it unchecked. The scheduled run is 05:00 UTC daily (07:00 Copenhagen in summer, 06:00 in winter, cron does not follow DST).
+5. **Check.** Run the "check setup" workflow (Actions tab). It tells you in plain words if a secret is wrong and sends a test message to Telegram.
+6. **First run.** Run the "digest" workflow with `dry_run` checked, open the run log and read the message it would have sent. Then run it unchecked. The scheduled run is 05:00 UTC daily (07:00 Copenhagen in summer, 06:00 in winter, cron does not follow DST).
 
 Local run: `pip install -r requirements.txt`, copy `.env.example` to `.env`, export it, then
 `python -m src.main --dry-run` (real feeds, real LLM, no delivery, page in a temp folder) or
