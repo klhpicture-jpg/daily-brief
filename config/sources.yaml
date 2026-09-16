@@ -13,13 +13,12 @@ rss:
   - { name: "Internet Retailing", url: "https://internetretailing.net/feed/" }
   - { name: "Just Style", url: "https://www.just-style.com/feed/" }
   - { name: "MarTech", url: "https://martech.org/feed/" }
-  - { name: "Search Engine Land", url: "https://searchengineland.com/feed" }
-  - { name: "Marketing Week", url: "https://www.marketingweek.com/feed/" }
   - { name: "HubSpot Marketing Blog", url: "https://blog.hubspot.com/marketing/rss.xml" }
   - { name: "OpenAI News", url: "https://openai.com/news/rss.xml" }
   - { name: "The Verge", url: "https://www.theverge.com/rss/index.xml" }
   # Dropped 2026-09-16, no feed at the URL tried. Re-add if you find the right one:
-  # Marketing Brew (404 at /feed), FashionUnited UK (422 at /rss/news), Shopify Blog (HTML, not a feed, at /blog.atom)
+  # Marketing Brew (404 at /feed), FashionUnited UK (422 at /rss/news), Shopify Blog (HTML, not a feed, at /blog.atom).
+  # Search Engine Land and Marketing Week answer 403 even to a browser agent (bot wall), dropped the same day.
 
 podcasts:
   # Phase 2. Episodes longer than max_minutes are skipped (transcription cost).
