@@ -16,12 +16,20 @@ HEADLINE_MAX = 60
 LINE_MAX = 90
 
 WRITING_RULES = """Writing rules:
-- No em dashes. Use commas, periods or parentheses.
-- Lead with what happened, then why it matters to this reader.
-- Name specific companies, numbers and dates. Delete any sentence that would survive unchanged in someone else's digest.
-- No filler openers like "In today's fast moving landscape".
+- Tell each item as a short story, not a headline. Three beats: what happened, what came
+  before or around it (the context a smart outsider is missing), and what changes now.
+  Name the actors. 60 to 110 words. Use the full article text, not just the title.
+- Every item carries one anchor the reader can repeat at dinner: a number, a quote, a
+  comparison, a date. Put it in the "remember" field, max 120 characters, self-contained.
+- "why_it_matters" is one or two sentences addressed to this reader: what to do, say or
+  watch because of it. Specific to their work and interests, never generic.
+- Explain jargon in a few plain words the first time it appears.
+- Connect to something the reader already knows when it helps memory ("the same move
+  Zalando made in 2024").
+- Lead with the concrete. Delete any sentence that would survive unchanged in someone
+  else's digest. No filler openers like "In today's fast moving landscape".
 - If an item is thin, say so in one line rather than padding it.
-- Plain text only, no markdown."""
+- No em dashes. Use commas, periods or parentheses. Plain text only, no markdown."""
 
 SYSTEM_TEMPLATE = """You write a short daily digest for one reader. They read it on a phone in under two minutes.
 
@@ -34,11 +42,11 @@ The reader's brief (verbatim):
 
 Output strict JSON only, shaped exactly like:
 {{
-  "headline": "one line summarising the day, max {headline_max} chars",
-  "top3": [{{"item_hash": "...", "line": "max {line_max} chars, concrete, no hype"}}],
+  "headline": "the day in one memorable line, max {headline_max} chars",
+  "top3": [{{"item_hash": "...", "line": "max {line_max} chars, one concrete fact, reads like a story hook"}}],
   "sections": [
     {{"title": "section title", "items": [
-      {{"item_hash": "...", "summary": "2 to 3 sentences", "why_it_matters": "1 sentence, specific to this reader"}}
+      {{"item_hash": "...", "summary": "60 to 110 words, three beats", "remember": "one anchor, max 120 chars", "why_it_matters": "1 to 2 sentences for this reader"}}
     ]}}
   ]
 }}
@@ -114,8 +122,9 @@ def normalize(data: dict, items: list[Item], topics: dict) -> dict:
             sections.setdefault(target, []).append(
                 {
                     "item_hash": h,
-                    "summary": _clip(raw.get("summary") or "", 700) or "No summary produced.",
-                    "why_it_matters": _clip(raw.get("why_it_matters") or "", 240),
+                    "summary": _clip(raw.get("summary") or "", 900) or "No summary produced.",
+                    "remember": _clip(raw.get("remember") or "", 140),
+                    "why_it_matters": _clip(raw.get("why_it_matters") or "", 320),
                 }
             )
             covered.add(h)
@@ -126,7 +135,7 @@ def normalize(data: dict, items: list[Item], topics: dict) -> dict:
         log.warning("writer skipped %s, adding a one-line fallback", it.title[:60])
         target = PODCAST_SECTION if it.source_type == "podcast" else OTHER_SECTION
         sections.setdefault(target, []).append(
-            {"item_hash": it.hash, "summary": _clip(it.text, 240) or "Thin item, nothing beyond the title.", "why_it_matters": _clip(it.why, 240)}
+            {"item_hash": it.hash, "summary": _clip(it.text, 240) or "Thin item, nothing beyond the title.", "remember": "", "why_it_matters": _clip(it.why, 240)}
         )
 
     top3: list[dict] = []
@@ -167,7 +176,7 @@ def write_fake(items: list[Item], topics: dict) -> dict:
             if any(str(k).lower() in hay for k in (p.get("include") or [])):
                 title = p["name"]
                 break
-        sections.append({"title": title, "items": [{"item_hash": it.hash, "summary": it.text[:300], "why_it_matters": it.why}]})
+        sections.append({"title": title, "items": [{"item_hash": it.hash, "summary": it.text[:300], "remember": it.title[:120], "why_it_matters": it.why}]})
     data = {
         "headline": "Stub digest, no LLM was used",
         "top3": [{"item_hash": it.hash, "line": it.title} for it in items[:3]],

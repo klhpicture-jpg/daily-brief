@@ -21,7 +21,7 @@ def test_page_is_small_static_and_escaped(tmp_path):
     digest = {
         "headline": "Head",
         "top3": [{"item_hash": it.hash, "line": "line"} for it in items[:3]],
-        "sections": [{"title": "Sec", "items": [{"item_hash": it.hash, "summary": "s" * 400, "why_it_matters": "w" * 150} for it in items]}],
+        "sections": [{"title": "Sec", "items": [{"item_hash": it.hash, "summary": "s" * 700, "remember": "keep <this>", "why_it_matters": "w" * 250} for it in items]}],
     }
     html = render.render_page(digest=digest, items=items, day=date(2026, 9, 16), repo="o/r", errors=["RSS: X: boom"], cost_usd=0.0123, counts={"kept": 15}, now=datetime(2026, 9, 16, 6, tzinfo=timezone.utc))
     assert len(html.encode()) < 30_000
@@ -30,6 +30,7 @@ def test_page_is_small_static_and_escaped(tmp_path):
     assert "labels=feedback-good" in html and "labels=feedback-bad" in html
     assert "background-color:var(--bg)" in html and "prefers-color-scheme:dark" in html
     assert "RSS: X: boom" in html
+    assert "keep &lt;this&gt;" in html
     paths = render.write_pages(html, tmp_path, date(2026, 9, 16))
     assert paths["index"].read_text() == html
     assert "2026-09-16.html" in paths["archive"].read_text()

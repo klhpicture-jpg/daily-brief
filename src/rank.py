@@ -15,7 +15,7 @@ TEXT_PREVIEW = 1200
 KEEP_THRESHOLD = 3
 FALLBACK_THRESHOLD = 2
 MIN_ITEMS = 5
-MAX_ITEMS = 15
+MAX_ITEMS = 12
 DEFAULT_SCORE = 2
 
 SCORING_GUIDE = """Score each item from 0 to 5 for the reader described below:
@@ -131,7 +131,7 @@ def rank_items(items: list[Item], topics_text: str, learned_text: str, model: st
 
 
 def select(items: list[Item]) -> list[Item]:
-    """Keep 3+, capped at 15. Below 5 survivors, drop the bar to 2."""
+    """Keep 3+, capped at MAX_ITEMS. Below 5 survivors, drop the bar to 2."""
     ordered = sorted(items, key=lambda it: ((it.score or 0), it.published_at), reverse=True)
     keep = [it for it in ordered if (it.score or 0) >= KEEP_THRESHOLD]
     if len(keep) < MIN_ITEMS:

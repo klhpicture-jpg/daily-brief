@@ -32,11 +32,11 @@ def test_select_drops_threshold_when_thin():
     assert rank.select(its) == []
 
 
-def test_select_caps_at_15():
+def test_select_caps_at_max_items():
     its = items(30)
     for it in its:
         it.score = 5
-    assert len(rank.select(its)) == 15
+    assert len(rank.select(its)) == rank.MAX_ITEMS == 12
 
 
 def test_fake_pipeline_covers_every_item():
@@ -58,7 +58,7 @@ def test_normalize_repairs_bad_writer_output():
     data = {
         "headline": "x" * 100,
         "top3": [{"item_hash": "bogus", "line": "no"}, {"item_hash": its[0].hash, "line": "y" * 200}],
-        "sections": [{"title": "Made up section", "items": [{"item_hash": its[0].hash, "summary": "s \u2014 t", "why_it_matters": "w"}]}],
+        "sections": [{"title": "Made up section", "items": [{"item_hash": its[0].hash, "summary": "s \u2014 t", "remember": "r" * 300, "why_it_matters": "w"}]}],
     }
     out = digest.normalize(data, its, topics)
     assert len(out["headline"]) == 60
@@ -66,6 +66,8 @@ def test_normalize_repairs_bad_writer_output():
     titles = [s["title"] for s in out["sections"]]
     assert digest.PODCAST_SECTION in titles and digest.OTHER_SECTION in titles
     assert "\u2014" not in out["sections"][-1]["items"][0]["summary"]
+    first = [e for sec in out["sections"] for e in sec["items"] if e["item_hash"] == its[0].hash][0]
+    assert len(first["remember"]) == 140
 
 
 def test_chat_json_raises_budget_on_empty_answer(monkeypatch):

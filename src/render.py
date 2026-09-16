@@ -31,6 +31,8 @@ article h3 a{display:block;min-height:44px;padding:.4rem 0;color:var(--fg);text-
 article h3 a:hover{color:var(--accent)}
 .meta{color:var(--muted);font-size:.85rem;margin:0 0 .5rem}
 .summary{margin:0 0 .6rem}
+.keep{margin:0 0 .6rem;font-weight:600}
+.keep span{color:var(--muted);font-weight:400;font-size:.85rem;text-transform:uppercase;letter-spacing:.04em;margin-right:.4rem}
 .why{background:var(--why-bg);color:var(--why-fg);border-left:3px solid var(--accent);padding:.5rem .75rem;margin:0 0 .6rem;font-size:.95rem}
 .links{font-size:.9rem;display:flex;flex-wrap:wrap;gap:.25rem 1rem;margin:0}
 .links a{color:var(--accent);text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
@@ -68,13 +70,14 @@ def render_item(entry: dict, item: Item, repo: str, now: datetime) -> str:
     good, bad = feedback_links(repo, item)
     when = relative_time(item.published_at, now)
     author = f" · {_esc(item.author)}" if item.author else ""
+    keep = f'<p class="keep"><span>Remember</span>{_esc(entry.get("remember"))}</p>' if entry.get("remember") else ""
     why = f'<p class="why">{_esc(entry.get("why_it_matters"))}</p>' if entry.get("why_it_matters") else ""
     return (
         f'<article id="i-{item.hash[:12]}">'
         f'<h3><a href="{_esc(item.url)}">{_esc(item.title)}</a></h3>'
         f'<p class="meta">{_esc(item.source)}{author} · {when}</p>'
         f'<p class="summary">{_esc(entry.get("summary"))}</p>'
-        f"{why}"
+        f"{keep}{why}"
         f'<p class="links"><a href="{_esc(item.url)}">Source</a>'
         f'<a class="fb" href="{good}" title="More like this">&#128077;</a>'
         f'<a href="{bad}" title="Less like this">&#128078;</a></p>'
