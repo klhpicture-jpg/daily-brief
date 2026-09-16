@@ -180,5 +180,5 @@ def write_digest(items: list[Item], topics_text: str, topics: dict, model: str, 
     if not items:
         return {"headline": "Nothing new today", "top3": [], "sections": []}
     system = build_system_prompt(topics_text, topics)
-    data = chat_json(model, system, _payload(items), usage, max_output_tokens=6000)
+    data = chat_json(model, system, _payload(items), usage, max_output_tokens=16000, reasoning_effort="low", attempts=3)
     return normalize(data, items, topics)

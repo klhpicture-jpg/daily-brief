@@ -66,3 +66,26 @@ def test_normalize_repairs_bad_writer_output():
     titles = [s["title"] for s in out["sections"]]
     assert digest.PODCAST_SECTION in titles and digest.OTHER_SECTION in titles
     assert "\u2014" not in out["sections"][-1]["items"][0]["summary"]
+
+
+def test_chat_json_raises_budget_on_empty_answer(monkeypatch):
+    from types import SimpleNamespace
+
+    from src import llm
+
+    budgets = []
+
+    class FakeCompletions:
+        def create(self, **kwargs):
+            budgets.append(kwargs["max_completion_tokens"])
+            if len(budgets) == 1:
+                msg = SimpleNamespace(content="")
+                return SimpleNamespace(choices=[SimpleNamespace(message=msg, finish_reason="length")], usage=None)
+            msg = SimpleNamespace(content='{"ok": true}')
+            return SimpleNamespace(choices=[SimpleNamespace(message=msg, finish_reason="stop")], usage=None)
+
+    fake = SimpleNamespace(chat=SimpleNamespace(completions=FakeCompletions()))
+    monkeypatch.setattr(llm, "_client", lambda: fake)
+    out = llm.chat_json("m", "s", "u", llm.Usage(), max_output_tokens=100, attempts=2)
+    assert out == {"ok": True}
+    assert budgets == [100, 200]

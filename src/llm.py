@@ -133,7 +133,16 @@ def chat_json(
             continue
         if resp.usage:
             usage.add_tokens(model, resp.usage.prompt_tokens or 0, resp.usage.completion_tokens or 0)
-        content = resp.choices[0].message.content if resp.choices else ""
+        choice = resp.choices[0] if resp.choices else None
+        content = (choice.message.content if choice else "") or ""
+        finish = getattr(choice, "finish_reason", None)
+        if finish == "length" or not content.strip():
+            # Reasoning models spend the completion budget on thinking first. An
+            # empty or cut-off answer means the budget was too small: double it.
+            last_error = ValueError(f"empty or truncated answer (finish_reason={finish}, {len(content)} chars)")
+            log.warning("%s: %s, attempt %d/%d, raising budget %d -> %d", model, last_error, attempt, attempts, max_output_tokens, max_output_tokens * 2)
+            max_output_tokens *= 2
+            continue
         try:
             return _extract_json(content)
         except ValueError as exc:

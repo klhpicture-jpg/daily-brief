@@ -49,7 +49,7 @@ def build_rules(feedback: list[dict], existing: str) -> list[str]:
         "feedback": [{"verdict": f["verdict"], "title": f["title"]} for f in feedback],
     }, ensure_ascii=False)
     usage = Usage()
-    data = chat_json(config.write_model(), SYSTEM, user, usage, max_output_tokens=1500)
+    data = chat_json(config.write_model(), SYSTEM, user, usage, max_output_tokens=6000, reasoning_effort="low")
     rules = [no_dashes(str(r)).strip() for r in data.get("rules") or [] if str(r).strip()]
     if not 1 <= len(rules) <= 12:
         raise RuntimeError(f"model returned {len(rules)} rules, expected 5 to 10")
