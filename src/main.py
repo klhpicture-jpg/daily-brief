@@ -81,7 +81,7 @@ def run(args: argparse.Namespace) -> int:
         rank.rank_fake(fresh, topics)
     else:
         rank.rank_items(fresh, topics_text, learned, config.rank_model(), usage)
-    kept = rank.select(fresh)
+    kept = rank.select(fresh, topics)
     log.info("kept %d items", len(kept))
 
     # 6. Write.

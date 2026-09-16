@@ -36,8 +36,9 @@ The reader's brief (verbatim from their topics file):
 ---
 {learned_block}
 Return strict JSON only, shaped exactly like:
-{{"scores": [{{"i": 0, "score": 3, "why": "one short sentence"}}, ...]}}
-Include every input index exactly once. "why" is one concrete sentence in Danish, max 20 words, no em dashes."""
+{{"scores": [{{"i": 0, "score": 3, "p": 0, "why": "one short sentence"}}, ...]}}
+Include every input index exactly once. "p" is the 0-based index of the priority in the brief
+that fits the item best, or -1 if none fits. "why" is one concrete sentence in Danish, max 20 words, no em dashes."""
 
 
 def build_system_prompt(topics_text: str, learned_text: str = "") -> str:
@@ -61,12 +62,12 @@ def _batch_payload(batch: list[Item]) -> str:
     return json.dumps({"items": rows}, ensure_ascii=False)
 
 
-def parse_scores(data: dict, expected: int) -> dict[int, tuple[int, str]]:
+def parse_scores(data: dict, expected: int) -> dict[int, tuple[int, str, int]]:
     """Validate the ranker's JSON. Raises ValueError on any shape problem."""
     scores = data.get("scores")
     if not isinstance(scores, list):
         raise ValueError("missing 'scores' list")
-    out: dict[int, tuple[int, str]] = {}
+    out: dict[int, tuple[int, str, int]] = {}
     for row in scores:
         if not isinstance(row, dict):
             raise ValueError("score row is not an object")
@@ -77,7 +78,11 @@ def parse_scores(data: dict, expected: int) -> dict[int, tuple[int, str]]:
             raise ValueError(f"bad score row {row!r}") from exc
         if not 0 <= score <= 5 or not 0 <= i < expected:
             raise ValueError(f"score row out of range {row!r}")
-        out[i] = (score, no_dashes(str(row.get("why") or "")).strip()[:160])
+        try:
+            priority = int(row.get("p", -1))
+        except (TypeError, ValueError):
+            priority = -1
+        out[i] = (score, no_dashes(str(row.get("why") or "")).strip()[:160], priority)
     missing = set(range(expected)) - set(out)
     if missing:
         raise ValueError(f"missing indices {sorted(missing)}")
@@ -96,29 +101,34 @@ def _rank_batch(batch: list[Item], system: str, model: str, usage: Usage) -> Non
             scores = None
     if scores is None:
         log.error("ranker gave up on a batch of %d, defaulting every item to score %d", len(batch), DEFAULT_SCORE)
-        scores = {i: (DEFAULT_SCORE, "ranker failed, default score") for i in range(len(batch))}
+        scores = {i: (DEFAULT_SCORE, "ranker failed, default score", -1) for i in range(len(batch))}
     for i, item in enumerate(batch):
-        item.score, item.why = scores[i]
+        item.score, item.why, item.meta["priority"] = scores[i]
 
 
 _WORD_RE = re.compile(r"[a-z0-9]+")
 
 
-def _keywords(topics: dict) -> list[str]:
-    words: list[str] = []
+def _keywords_by_priority(topics: dict) -> list[set[str]]:
+    out: list[set[str]] = []
     for p in topics.get("priorities", []):
+        words: set[str] = set()
         for phrase in p.get("include", []) or []:
-            words.extend(w for w in _WORD_RE.findall(str(phrase).lower()) if len(w) > 3)
-    return sorted(set(words))
+            words.update(w for w in _WORD_RE.findall(str(phrase).lower()) if len(w) > 3)
+        out.append(words)
+    return out
 
 
 def rank_fake(items: list[Item], topics: dict) -> None:
     """Deterministic stand-in for --no-llm: keyword overlap with topics.yaml."""
-    keywords = _keywords(topics)
+    by_priority = _keywords_by_priority(topics)
     for item in items:
         haystack = f"{item.title} {item.text[:TEXT_PREVIEW]}".lower()
-        hits = sorted({k for k in keywords if k in haystack})
+        per = [sorted({k for k in words if k in haystack}) for words in by_priority]
+        best = max(range(len(per)), key=lambda i: len(per[i]), default=-1)
+        hits = per[best] if best >= 0 else []
         item.score = min(5, 1 + len(hits)) if hits else 1
+        item.meta["priority"] = best if hits else -1
         item.why = f"stub: matched {', '.join(hits[:4])}" if hits else "stub: no topic keywords matched"
 
 
@@ -130,10 +140,34 @@ def rank_items(items: list[Item], topics_text: str, learned_text: str, model: st
         log.info("ranked %d/%d", min(start + BATCH_SIZE, len(items)), len(items))
 
 
-def select(items: list[Item]) -> list[Item]:
-    """Keep 3+, capped at MAX_ITEMS. Below 5 survivors, drop the bar to 2."""
+QUOTA = {"high": 2, "medium": 1, "low": 0}
+
+
+def select(items: list[Item], topics: dict | None = None) -> list[Item]:
+    """Keep 3+, capped at MAX_ITEMS. Below 5 survivors, drop the bar to 2.
+
+    Every priority in topics.yaml gets a floor first (2 items for weight high,
+    1 for medium) so a busy AI day cannot push sport or Europe off the page,
+    then the rest of the slots go to the highest scores.
+    """
     ordered = sorted(items, key=lambda it: ((it.score or 0), it.published_at), reverse=True)
     keep = [it for it in ordered if (it.score or 0) >= KEEP_THRESHOLD]
     if len(keep) < MIN_ITEMS:
         keep = [it for it in ordered if (it.score or 0) >= FALLBACK_THRESHOLD]
-    return keep[:MAX_ITEMS]
+    if len(keep) <= MAX_ITEMS:
+        return keep
+    picks: list[Item] = []
+    for index, priority in enumerate((topics or {}).get("priorities", [])):
+        quota = QUOTA.get(str(priority.get("weight", "medium")).lower(), 1)
+        for it in keep:
+            if quota == 0 or len(picks) >= MAX_ITEMS:
+                break
+            if it.meta.get("priority") == index and it not in picks:
+                picks.append(it)
+                quota -= 1
+    for it in keep:
+        if len(picks) >= MAX_ITEMS:
+            break
+        if it not in picks:
+            picks.append(it)
+    return sorted(picks, key=lambda it: ((it.score or 0), it.published_at), reverse=True)

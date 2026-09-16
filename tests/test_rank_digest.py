@@ -12,9 +12,10 @@ def items(n=6):
 
 
 def test_parse_scores_validates_shape():
-    data = {"scores": [{"i": 0, "score": 4, "why": "x \u2014 y"}, {"i": 1, "score": 2, "why": "z"}]}
+    data = {"scores": [{"i": 0, "score": 4, "p": 1, "why": "x \u2014 y"}, {"i": 1, "score": 2, "why": "z"}]}
     out = rank.parse_scores(data, 2)
-    assert out[0] == (4, "x, y")
+    assert out[0] == (4, "x, y", 1)
+    assert out[1][2] == -1
     with pytest.raises(ValueError):
         rank.parse_scores({"scores": [{"i": 0, "score": 9}]}, 1)
     with pytest.raises(ValueError):
@@ -91,3 +92,16 @@ def test_chat_json_raises_budget_on_empty_answer(monkeypatch):
     out = llm.chat_json("m", "s", "u", llm.Usage(), max_output_tokens=100, attempts=2)
     assert out == {"ok": True}
     assert budgets == [100, 200]
+
+
+def test_select_gives_every_priority_a_floor():
+    topics = {"priorities": [{"name": "A", "weight": "high"}, {"name": "B", "weight": "medium"}, {"name": "C", "weight": "medium"}]}
+    its = items(30)
+    for n, it in enumerate(its):
+        it.score = 5 if n < 20 else 3          # twenty strong items all in priority A
+        it.meta["priority"] = 0 if n < 20 else (1 if n < 25 else 2)
+    kept = rank.select(its, topics)
+    assert len(kept) == rank.MAX_ITEMS
+    prios = [it.meta["priority"] for it in kept]
+    assert prios.count(1) >= 1 and prios.count(2) >= 1
+    assert prios.count(0) == rank.MAX_ITEMS - 2

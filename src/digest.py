@@ -56,7 +56,8 @@ Output strict JSON only, shaped exactly like:
 Section rules:
 - Use only these section titles, in this order, and skip empty ones: {sections}.
 - Every item with source_type "podcast" goes in "{podcast_section}". Start its summary with a timestamped highlight (like "At 12:40, ...") when the transcript has timestamps; otherwise give the most concrete moment.
-- Every other item goes in the priority section it fits best, or "{other_section}" if none fits.
+- Every other item goes in the priority section it fits best ("suggested_section" is the ranker's
+  guess, override it when the text says otherwise), or "{other_section}" if none fits.
 - Cover every input item exactly once. Use each item_hash exactly as given.
 - top3 holds the three items the reader most needs today, best first."""
 
@@ -74,7 +75,14 @@ def build_system_prompt(topics_text: str, topics: dict) -> str:
     )
 
 
-def _payload(items: list[Item]) -> str:
+def _suggested(item: Item, names: list[str]) -> str:
+    if item.source_type == "podcast":
+        return PODCAST_SECTION
+    p = item.meta.get("priority", -1)
+    return names[p] if isinstance(p, int) and 0 <= p < len(names) else OTHER_SECTION
+
+
+def _payload(items: list[Item], names: list[str]) -> str:
     rows = [
         {
             "item_hash": it.hash,
@@ -84,6 +92,7 @@ def _payload(items: list[Item]) -> str:
             "url": it.url,
             "published_at": it.published_at.isoformat(timespec="minutes"),
             "ranker_note": it.why,
+            "suggested_section": _suggested(it, names),
             "text": it.text,
         }
         for it in items
@@ -191,5 +200,5 @@ def write_digest(items: list[Item], topics_text: str, topics: dict, model: str, 
     if not items:
         return {"headline": "Intet nyt i dag", "top3": [], "sections": []}
     system = build_system_prompt(topics_text, topics)
-    data = chat_json(model, system, _payload(items), usage, max_output_tokens=16000, reasoning_effort="low", attempts=3)
+    data = chat_json(model, system, _payload(items, priority_names(topics)), usage, max_output_tokens=16000, reasoning_effort="low", attempts=3)
     return normalize(data, items, topics)
