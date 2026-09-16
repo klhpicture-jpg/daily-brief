@@ -33,3 +33,50 @@ def test_page_is_small_static_and_escaped(tmp_path):
     paths = render.write_pages(html, tmp_path, date(2026, 9, 16))
     assert paths["index"].read_text() == html
     assert "2026-09-16.html" in paths["archive"].read_text()
+
+
+def test_telegram_send_posts_once(monkeypatch):
+    calls = []
+
+    class Resp:
+        status_code = 200
+        content = b"x"
+
+        def json(self):
+            return {"ok": True, "result": {"message_id": 42}}
+
+    monkeypatch.setenv("DELIVERY_CHANNEL", "telegram")
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "t")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "123")
+    monkeypatch.setattr(deliver.requests, "post", lambda url, **kw: calls.append((url, kw)) or Resp())
+    assert deliver.send("hello") == "42"
+    assert len(calls) == 1
+    assert calls[0][0].endswith("/bot" + "t" + "/sendMessage")
+    assert calls[0][1]["json"] == {"chat_id": "123", "text": "hello", "disable_web_page_preview": False}
+
+
+def test_telegram_error_is_raised(monkeypatch):
+    class Resp:
+        status_code = 400
+        content = b"x"
+        text = "bad"
+
+        def json(self):
+            return {"ok": False, "description": "chat not found"}
+
+    monkeypatch.setenv("DELIVERY_CHANNEL", "telegram")
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "t")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "123")
+    monkeypatch.setattr(deliver.requests, "post", lambda url, **kw: Resp())
+    import pytest
+
+    with pytest.raises(RuntimeError, match="chat not found"):
+        deliver.send("hello")
+
+
+def test_unknown_channel_rejected(monkeypatch):
+    monkeypatch.setenv("DELIVERY_CHANNEL", "pigeon")
+    import pytest
+
+    with pytest.raises(RuntimeError, match="DELIVERY_CHANNEL"):
+        deliver.send("hello")

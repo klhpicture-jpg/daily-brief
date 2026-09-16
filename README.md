@@ -3,8 +3,8 @@
 A personal daily intelligence digest. Every morning a GitHub Action collects
 RSS (podcasts and web watch come in later phases), scores every item with a
 cheap model against `config/topics.yaml`, has a stronger model write only the
-survivors, publishes a mobile-first page to GitHub Pages and texts a three
-line teaser with the link.
+survivors, publishes a mobile-first page to GitHub Pages and sends a three line teaser
+with the link to Telegram (or SMS).
 
 Read on a phone, in under two minutes. That constraint drives every decision.
 
@@ -25,13 +25,14 @@ Local run: `pip install -r requirements.txt`, copy `.env.example` to `.env`, exp
 | Secret | Used for |
 |---|---|
 | `OPENAI_API_KEY` | ranking, writing, transcription (phase 2), feedback rollup |
-| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` | delivery |
-| `TWILIO_FROM`, `TWILIO_TO` | sender number and your phone, E.164 (`+45...`) |
+| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | delivery, the default channel |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` | delivery via SMS or WhatsApp only |
+| `TWILIO_FROM`, `TWILIO_TO` | sender number and your phone, E.164 (`+45...`), SMS or WhatsApp only |
 | `TWILIO_CONTENT_SID` | only for WhatsApp, the approved template SID (`HX...`) |
 | `FIRECRAWL_API_KEY` | web watch (phase 3) |
 | `APIFY_TOKEN` | LinkedIn (phase 4) |
 
-Repo variables (not secrets): `DELIVERY_CHANNEL` (`sms`, the default, or `whatsapp`), `OPENAI_RANK_MODEL`, `OPENAI_WRITE_MODEL`, `OPENAI_TRANSCRIBE_MODEL`.
+Repo variables (not secrets): `DELIVERY_CHANNEL` (`telegram`, the default, `sms` or `whatsapp`), `OPENAI_RANK_MODEL`, `OPENAI_WRITE_MODEL`, `OPENAI_TRANSCRIBE_MODEL`.
 
 ## Add a source
 
@@ -56,7 +57,16 @@ getting muted. Edit `learned.md` by hand any time.
 
 ## Delivery
 
-SMS is the working default. WhatsApp is behind `DELIVERY_CHANNEL=whatsapp`:
+Telegram is the default: free, no number to rent, push notification on the phone.
+
+1. In Telegram, message @BotFather, send `/newbot`, follow the prompts, copy the token.
+2. Open a chat with your new bot and send it any message (a bot cannot message you first).
+3. Open `https://api.telegram.org/bot<TOKEN>/getUpdates` in a browser and copy `chat.id` from the JSON.
+4. Add `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` as repo secrets.
+5. Test it: `DELIVERY_CHANNEL=telegram python -m src.deliver --test` locally, or run the digest workflow.
+
+SMS is behind `DELIVERY_CHANNEL=sms` (Twilio, roughly 0.05 USD per segment to Denmark, a
+480 character teaser is 3 to 4 segments). WhatsApp is behind `DELIVERY_CHANNEL=whatsapp`:
 business-initiated WhatsApp messages outside a 24 hour session window must use a
 pre-approved Content Template, sent with `ContentSid` and `ContentVariables` (plain `Body`
 fails with Twilio error 63016 since April 2025). Create a template in the Twilio Content

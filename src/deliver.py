@@ -1,4 +1,9 @@
-"""Delivery via Twilio. SMS is the working default.
+"""Delivery. Telegram is the default (free, no number to rent). Twilio SMS and
+WhatsApp stay available behind DELIVERY_CHANNEL.
+
+Telegram: create a bot with @BotFather, send it one message, read your chat id
+from https://api.telegram.org/bot<TOKEN>/getUpdates, set TELEGRAM_BOT_TOKEN and
+TELEGRAM_CHAT_ID. One HTTP call per message, no dependency.
 
 WhatsApp: business-initiated messages outside a 24 hour session window need a
 pre-approved Content Template (since April 2025 a plain Body fails with Twilio
@@ -14,10 +19,14 @@ import logging
 import os
 import sys
 
+import requests
+
 log = logging.getLogger("deliver")
 
 MAX_CHARS = 480
 LINE_MAX = 90
+CHANNELS = ("telegram", "sms", "whatsapp")
+TELEGRAM_TIMEOUT = 15
 
 
 def _fit_line(line: str, limit: int) -> str:
@@ -53,6 +62,31 @@ def _client():
     return Client(sid, token)
 
 
+def channel() -> str:
+    value = (os.environ.get("DELIVERY_CHANNEL") or "telegram").strip().lower()
+    if value not in CHANNELS:
+        raise RuntimeError(f"DELIVERY_CHANNEL must be one of {CHANNELS}, got {value!r}")
+    return value
+
+
+def _send_telegram(message: str) -> str:
+    token = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+    if not token or not chat_id:
+        raise RuntimeError("TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID must be set")
+    resp = requests.post(
+        f"https://api.telegram.org/bot{token}/sendMessage",
+        json={"chat_id": chat_id, "text": message, "disable_web_page_preview": False},
+        timeout=TELEGRAM_TIMEOUT,
+    )
+    data = resp.json() if resp.content else {}
+    if resp.status_code != 200 or not data.get("ok"):
+        raise RuntimeError(f"Telegram sendMessage failed: {resp.status_code} {data.get('description', resp.text[:200])}")
+    message_id = str(data["result"]["message_id"])
+    log.info("sent via telegram, message_id %s", message_id)
+    return message_id
+
+
 def _addresses() -> tuple[str, str, str]:
     channel = (os.environ.get("DELIVERY_CHANNEL") or "sms").strip().lower()
     sender = os.environ.get("TWILIO_FROM", "").strip()
@@ -68,11 +102,13 @@ def _addresses() -> tuple[str, str, str]:
 
 
 def send(message: str, template_variables: dict | None = None) -> str:
-    """Send one message. Returns the Twilio message SID."""
-    channel, sender, to = _addresses()
+    """Send one message. Returns the provider's message id."""
+    if channel() == "telegram":
+        return _send_telegram(message)
+    channel_name, sender, to = _addresses()
     client = _client()
     content_sid = os.environ.get("TWILIO_CONTENT_SID", "").strip()
-    if channel == "whatsapp" and content_sid:
+    if channel_name == "whatsapp" and content_sid:
         msg = client.messages.create(
             from_=sender,
             to=to,
@@ -80,10 +116,10 @@ def send(message: str, template_variables: dict | None = None) -> str:
             content_variables=json.dumps(template_variables or {"1": message}),
         )
     else:
-        if channel == "whatsapp":
+        if channel_name == "whatsapp":
             log.warning("WhatsApp without TWILIO_CONTENT_SID only works inside an open 24h session")
         msg = client.messages.create(from_=sender, to=to, body=message)
-    log.info("sent via %s, sid %s, status %s", channel, msg.sid, msg.status)
+    log.info("sent via %s, sid %s, status %s", channel_name, msg.sid, msg.status)
     return msg.sid
 
 
@@ -102,7 +138,7 @@ def send_failure(run_url: str) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Send a test or failure message through Twilio.")
+    parser = argparse.ArgumentParser(description="Send a test or failure message through the configured channel.")
     parser.add_argument("--failure", action="store_true", help="send the 'digest failed' message")
     parser.add_argument("--run-url", default="", help="link to the failed workflow run")
     parser.add_argument("--test", action="store_true", help="send a short test message")

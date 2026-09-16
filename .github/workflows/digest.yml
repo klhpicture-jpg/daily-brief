@@ -26,12 +26,14 @@ jobs:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
       APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
       TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
       TWILIO_FROM: ${{ secrets.TWILIO_FROM }}
       TWILIO_TO: ${{ secrets.TWILIO_TO }}
       TWILIO_CONTENT_SID: ${{ secrets.TWILIO_CONTENT_SID }}
-      DELIVERY_CHANNEL: ${{ vars.DELIVERY_CHANNEL || 'sms' }}
+      DELIVERY_CHANNEL: ${{ vars.DELIVERY_CHANNEL || 'telegram' }}
       OPENAI_RANK_MODEL: ${{ vars.OPENAI_RANK_MODEL || 'gpt-5-nano' }}
       OPENAI_WRITE_MODEL: ${{ vars.OPENAI_WRITE_MODEL || 'gpt-5' }}
       OPENAI_TRANSCRIBE_MODEL: ${{ vars.OPENAI_TRANSCRIBE_MODEL || 'gpt-4o-mini-transcribe' }}
@@ -75,6 +77,6 @@ jobs:
           done
           exit 1
 
-      - name: Text me that it failed
+      - name: Message me that it failed
         if: failure()
         run: python -m src.deliver --failure --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
