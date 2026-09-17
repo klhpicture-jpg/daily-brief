@@ -7,7 +7,7 @@ hour until midnight and uses a marker file to keep it to one per period.
 A weekly brief additionally has to land on its weekday.
 
     python scripts/gate.py --marker state/last_scheduled.txt --from-hour 18
-    python scripts/gate.py --marker state/id/last_scheduled.txt --from-hour 7 --weekly --weekday 0
+    python scripts/gate.py --marker state/id/last_scheduled.txt --from-hour 18 --weekly --weekday 0
 
 Prints GitHub Actions outputs (run, reason) to stdout.
 """

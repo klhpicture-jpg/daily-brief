@@ -76,15 +76,17 @@ def test_weekly_gate_runs_once_on_monday():
     from scripts.gate import decide, period_key
 
     tz = ZoneInfo("Europe/Copenhagen")
-    monday = datetime(2026, 9, 21, 7, 25, tzinfo=tz)
-    monday_late = datetime(2026, 9, 21, 10, 40, tzinfo=tz)
-    tuesday = datetime(2026, 9, 22, 7, 25, tzinfo=tz)
+    monday = datetime(2026, 9, 21, 18, 40, tzinfo=tz)
+    monday_early = datetime(2026, 9, 21, 17, 40, tzinfo=tz)
+    monday_late = datetime(2026, 9, 21, 21, 55, tzinfo=tz)
+    tuesday = datetime(2026, 9, 22, 18, 40, tzinfo=tz)
     week = period_key(monday, weekly=True)
 
-    assert decide("schedule", monday, "", 7, weekly=True, weekday=0)[0] is True
-    assert decide("schedule", monday_late, "", 7, weekly=True, weekday=0)[0] is True, "a late Monday still delivers"
-    assert decide("schedule", monday_late, week, 7, weekly=True, weekday=0)[0] is False, "one delivery per week"
-    assert decide("schedule", tuesday, "", 7, weekly=True, weekday=0)[0] is False, "Tuesday is not this brief's day"
+    assert decide("schedule", monday, "", 18, weekly=True, weekday=0)[0] is True
+    assert decide("schedule", monday_early, "", 18, weekly=True, weekday=0)[0] is False, "the winter slot at 17:40 waits"
+    assert decide("schedule", monday_late, "", 18, weekly=True, weekday=0)[0] is True, "a late Monday still delivers"
+    assert decide("schedule", monday_late, week, 18, weekly=True, weekday=0)[0] is False, "one delivery per week"
+    assert decide("schedule", tuesday, "", 18, weekly=True, weekday=0)[0] is False, "Tuesday is not this brief's day"
     assert period_key(datetime(2026, 9, 27, 9, 0, tzinfo=tz), weekly=True) == week, "Sunday belongs to the same week"
 
 

@@ -41,7 +41,7 @@ Repo variables (not secrets): `DELIVERY_CHANNEL` (`telegram`, the default, `sms`
 |---|---|---|
 | Profile | `daily` | `id` |
 | For | Kasper: AI, marketing, retail, Europe, sport | ID Identity (Rexholm): competitors, textile regulation, the promo and workwear trade |
-| When | every day, 18:25 Europe/Copenhagen | Monday, 07:25 Europe/Copenhagen |
+| When | every day, 18:25 Europe/Copenhagen | Monday, 18:40 Europe/Copenhagen |
 | Window | since the last run, at most 24h | since the last run, at most 7 days |
 | Items | up to 12 | up to 10 |
 | Config | `config/` | `config/id/` |

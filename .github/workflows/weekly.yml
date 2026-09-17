@@ -2,11 +2,12 @@ name: id weekly
 
 on:
   schedule:
-    # Target: Monday 07:25 Europe/Copenhagen. Cron is UTC and ignores DST, so both
-    # candidate hours fire and scripts/gate.py lets exactly one through. A late start
-    # still delivers, any time on Monday from 07:00 local.
-    - cron: "25 5 * * 1"   # 07:25 CEST (summer)
-    - cron: "25 6 * * 1"   # 07:25 CET (winter)
+    # Target: Monday 18:40 Europe/Copenhagen, a quarter of an hour after the daily
+    # brief. Cron is UTC and ignores DST, so both candidate hours fire and
+    # scripts/gate.py lets exactly one through. A late start still delivers, any
+    # time on Monday evening.
+    - cron: "40 16 * * 1"   # 18:40 CEST (summer)
+    - cron: "40 17 * * 1"   # 18:40 CET (winter)
   workflow_dispatch:
     inputs:
       dry_run:
@@ -48,7 +49,7 @@ jobs:
 
       - name: Decide whether this slot runs
         id: gate
-        run: python3 scripts/gate.py --marker state/id/last_scheduled.txt --from-hour 7 --weekly --weekday 0 >> "$GITHUB_OUTPUT"
+        run: python3 scripts/gate.py --marker state/id/last_scheduled.txt --from-hour 18 --weekly --weekday 0 >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-python@v6
         if: steps.gate.outputs.run == 'true'
