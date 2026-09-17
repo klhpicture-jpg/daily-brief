@@ -118,7 +118,9 @@ def test_id_profile_is_wired_end_to_end(tmp_path, monkeypatch):
     topics = config.load_topics(profile)
     sources = config.load_sources(profile)
     assert [p["name"] for p in topics["priorities"]][0] == "Konkurrenter og ejerskab"
-    assert len(sources["rss"]) > 15
+    names = [f["name"] for f in sources["rss"]]
+    assert "New Wave Group (MFN)" in names, "the listed competitor feed is the point of this brief"
+    assert all(f.get("url") for f in sources["rss"]), "every source needs a url"
     assert config.page_url(profile, date(2026, 9, 21)).endswith("/id/2026-09-21.html")
 
 
