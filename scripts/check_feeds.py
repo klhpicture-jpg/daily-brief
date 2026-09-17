@@ -11,25 +11,23 @@ import argparse
 import os
 import sys
 
-import feedparser
 import requests
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src import config  # noqa: E402
-from src.collectors.rss import fetch  # noqa: E402
+from src.collectors.rss import fetch_feed  # noqa: E402
 
 
 def check(url: str, want_audio: bool) -> tuple[bool, str]:
     try:
-        resp = fetch(url, timeout=20)
+        parsed = fetch_feed(url, timeout=20)
     except requests.HTTPError as exc:
         return False, f"HTTP {exc.response.status_code}"
     except requests.RequestException as exc:
         return False, f"request failed: {type(exc).__name__}: {exc}"
-    parsed = feedparser.parse(resp.content)
     if parsed.bozo and not parsed.entries:
-        return False, f"not a feed: {parsed.bozo_exception}"
+        return False, f"not a feed, the server served something else: {str(parsed.bozo_exception)[:80]}"
     if not parsed.entries:
         return False, "feed has no entries"
     newest = parsed.entries[0].get("published") or parsed.entries[0].get("updated") or "no date"

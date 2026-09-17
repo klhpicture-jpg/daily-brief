@@ -1,7 +1,8 @@
 # Kilder til den ugentlige ID-branchebrief.
 #
-# ALLE URL'er herunder er gæt fra et researchdokument (17. september 2026) og IKKE
-# testet. Kør "check sources" med profile=id (Actions-fanen), så fjerner vi dem der fejler.
+# Tjekket 17. september 2026 med "check sources" (profile=id). 10 af 25 svarede.
+# De døde er fjernet, se listen nederst. Feeds markeret VERIFY er endnu ikke bekræftet.
+# Kør workflowet igen efter hver ændring.
 #
 # Tre ting ligger bevidst udenfor:
 # - Betalingsmure (Børsen, Finans, Ecotextile-artikler, PSI Journal, Digital Commerce 360
@@ -12,33 +13,26 @@
 
 rss:
   # Konkurrenter, børsnoterede. Det stærkeste signal i hele listen.
-  - { name: "New Wave Group", url: "https://www.nwg.se/en/feed/" }
   - { name: "New Wave Group (MFN)", url: "https://mfn.se/all/a/new-wave-group.rss" }
-  - { name: "Hultafors Group (Snickers, Fristads)", url: "https://www.hultaforsgroup.com/feed/" }
-  - { name: "Investment AB Latour", url: "https://www.latour.se/en/feed/" }
-  - { name: "Gildan", url: "https://gildancorp.com/en/feed/" }
+  - { name: "Latour (MFN)", url: "https://mfn.se/all/a/latour.rss" }
+  - { name: "Latour (MFN, langt slug)", url: "https://mfn.se/all/a/investment-ab-latour.rss" }
 
   # Promotion- og dekorationsbranchen
   - { name: "eppi magazine", url: "https://www.eppi-online.com/feed" }
   - { name: "Werbeartikel Nachrichten", url: "https://www.werbeartikel-verlag.de/feed" }
-  - { name: "PSI Network", url: "https://www.psi-network.de/en/rss" }
-  - { name: "Images Magazine", url: "https://www.images-magazine.com/feed/" }
+  - { name: "PSI Network", url: "https://www.psi-network.de/rss" }
   - { name: "Printwear & Promotion", url: "https://printwearandpromotion.co.uk/feed/" }
   - { name: "FESPA", url: "https://www.fespa.com/en/rss" }
   - { name: "PPAI Media", url: "https://www.ppai.org/feed/" }
-  - { name: "ASI Central", url: "https://www.asicentral.com/rss/news/" }
 
   # Tekstil, sourcing og regulering
   - { name: "Ecotextile News", url: "https://www.ecotextile.com/feed" }
   - { name: "Sourcing Journal", url: "https://sourcingjournal.com/feed/" }
   - { name: "Just Style", url: "https://www.just-style.com/feed/" }
   - { name: "Apparel Insider", url: "https://apparelinsider.com/feed/" }
-  - { name: "Textination", url: "https://www.textination.de/rss/news" }
 
   # Dansk industri og e-handel
   - { name: "Dansk Mode & Textil", url: "https://dmogt.dk/feed/" }
-  - { name: "Dansk Erhverv", url: "https://www.danskerhverv.dk/rss/nyheder/" }
-  - { name: "Lifestyle & Design Cluster", url: "https://ldcluster.com/feed/" }
   - { name: "Ecommerce News Europe", url: "https://ecommercenews.eu/feed/" }
 
   # Nyhedsbreve uden feed. Opret en feed-adresse på kill-the-newsletter.com, tilmeld dig
@@ -54,11 +48,18 @@ rss:
   #   Berufsbekleidung Hersteller (Übernahme OR Fusion) | Digital Product Passport textiles
   # - { name: "Alert: konkurrenter DK", url: "https://www.google.com/alerts/feeds/XXXX/YYYY" }
 
+  # Fjernet 17. september 2026 efter kilde-tjek:
+  #   nwg.se/en/feed (404, MFN-feedet dækker New Wave Group), Gildan (404, kun watchlist),
+  #   Images Magazine (serverens TLS afviser GitHubs runners), ASI Central (redirect-løkke),
+  #   Textination, Dansk Erhverv, Lifestyle & Design Cluster (404),
+  #   The B2B eCommerce Show (404).
+  # Endnu uafklarede, forsøges igen med browser-agent: Sourcing Journal, Dansk Mode & Textil,
+  # Kassenzone (alle tre svarede med en HTML-side i stedet for et feed), Future Commerce (503).
+
 podcasts:
   # Hentes gratis fra shownotes. transcribe: true tænder fuld transskription (fase 2).
   - { name: "Kassenzone", feed: "https://kassenzone.de/feed/podcast/", max_minutes: 90, transcribe: false }
   - { name: "Future Commerce", feed: "https://feeds.megaphone.fm/futurecommerce", max_minutes: 60, transcribe: false }
-  - { name: "The B2B eCommerce Show", feed: "https://feeds.buzzsprout.com/1734283.rss", max_minutes: 45, transcribe: false }
 
 web_watch:
   # Fase 3. Private konkurrenter uden feed. Slås til når vi tager Firecrawl i brug.

@@ -22,22 +22,43 @@ FEED_TIMEOUT = 15
 BODY_TIMEOUT = 10
 SUMMARY_IS_ENOUGH = 600      # chars; above this, skip the body fetch entirely
 MAX_ENTRIES_PER_FEED = 25
+# Status codes that usually mean "you do not look like a browser", not "go away".
+RETRY_AS_BROWSER = {403, 406, 429, 503}
+# Ask for a feed explicitly. Some servers hand an HTML page to anyone who does not.
+FEED_ACCEPT = "application/rss+xml, application/atom+xml, application/xml;q=0.9, */*;q=0.8"
 
-
-def fetch(url: str, timeout: int = FEED_TIMEOUT) -> requests.Response:
-    """GET with the polite agent, retried once with a browser agent on 403."""
-    resp = requests.get(url, timeout=timeout, headers={"User-Agent": USER_AGENT})
-    if resp.status_code == 403:
-        log.info("%s answered 403, retrying with a browser user agent", url)
+def fetch(url: str, timeout: int = FEED_TIMEOUT, browser: bool = False) -> requests.Response:
+    """GET a URL, retried once as a browser when the server turns us away."""
+    agent = BROWSER_AGENT if browser else USER_AGENT
+    resp = requests.get(url, timeout=timeout, headers={"User-Agent": agent, "Accept": FEED_ACCEPT})
+    if not browser and resp.status_code in RETRY_AS_BROWSER:
+        log.info("%s answered %d, retrying with a browser user agent", url, resp.status_code)
         resp = requests.get(url, timeout=timeout, headers={"User-Agent": BROWSER_AGENT, "Accept": "*/*"})
     resp.raise_for_status()
     return resp
 
 
-def _read_feed(url: str) -> bytes:
+def fetch_feed(url: str, timeout: int = FEED_TIMEOUT):
+    """Fetch and parse a feed.
+
+    A bot wall answers 200 with an HTML page rather than an error, so a parse
+    that finds no entries is not proof the feed is dead. Ask once more as a
+    browser before believing it.
+    """
+    parsed = feedparser.parse(fetch(url, timeout).content)
+    if parsed.entries:
+        return parsed
+    retry = feedparser.parse(fetch(url, timeout, browser=True).content)
+    if retry.entries:
+        log.info("%s only serves its feed to a browser user agent", url)
+        return retry
+    return parsed
+
+
+def _read_feed(url: str):
     if url.startswith("file://"):
-        return Path(url[len("file://"):]).read_bytes()
-    return fetch(url).content
+        return feedparser.parse(Path(url[len("file://"):]).read_bytes())
+    return fetch_feed(url)
 
 
 def fetch_body(url: str) -> str:
@@ -63,7 +84,7 @@ def collect_feed(feed: dict, since: datetime) -> list[Item]:
     url = feed["url"]
     source_type = feed.get("source_type", "rss")
     now = utcnow()
-    parsed = feedparser.parse(_read_feed(url))
+    parsed = _read_feed(url)
     if parsed.bozo and not parsed.entries:
         raise RuntimeError(f"feed did not parse: {parsed.bozo_exception}")
 

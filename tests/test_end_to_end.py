@@ -120,3 +120,36 @@ def test_id_profile_is_wired_end_to_end(tmp_path, monkeypatch):
     assert [p["name"] for p in topics["priorities"]][0] == "Konkurrenter og ejerskab"
     assert len(sources["rss"]) > 15
     assert config.page_url(profile, date(2026, 9, 21)).endswith("/id/2026-09-21.html")
+
+
+def test_fetch_feed_retries_as_a_browser_when_served_html():
+    """Bot walls answer 200 with a page, not an error. One retry as a browser recovers the feed."""
+    from src.collectors import rss
+
+    feed = (b'<?xml version="1.0"?><rss version="2.0"><channel><title>Trade</title>'
+            b'<item><title>Mascot opens a plant</title><link>https://example.org/a</link></item>'
+            b'</channel></rss>')
+    calls = []
+
+    class Resp:
+        def __init__(self, content):
+            self.content, self.status_code = content, 200
+
+        def raise_for_status(self):
+            return None
+
+    def fake_get(url, timeout=None, headers=None):
+        agent = (headers or {}).get("User-Agent", "")
+        calls.append(agent)
+        is_browser = agent.startswith("Mozilla/")
+        return Resp(feed if is_browser else b"<!DOCTYPE html><html><body>Just a moment</body></html>")
+
+    original = rss.requests.get
+    rss.requests.get = fake_get
+    try:
+        parsed = rss.fetch_feed("https://example.org/feed")
+    finally:
+        rss.requests.get = original
+
+    assert len(parsed.entries) == 1 and parsed.entries[0].title == "Mascot opens a plant"
+    assert len(calls) == 2 and not calls[0].startswith("Mozilla/") and calls[1].startswith("Mozilla/")
