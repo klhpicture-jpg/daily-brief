@@ -51,3 +51,18 @@ def test_podcast_feed_falls_back_to_show_notes():
     items = fn(cfg, datetime(2026, 9, 14, tzinfo=timezone.utc))
     assert items and all(it.source_type == "podcast" for it in items)
     assert not any(it.meta.get("body_fetched") for it in items)
+
+
+def test_gate_tolerates_late_scheduled_runs():
+    from zoneinfo import ZoneInfo
+
+    from scripts.gate import decide
+
+    tz = ZoneInfo("Europe/Copenhagen")
+    late = datetime(2026, 9, 16, 21, 36, tzinfo=tz)
+    early = datetime(2026, 9, 16, 17, 25, tzinfo=tz)
+
+    assert decide("schedule", late, "")[0] is True, "a three hour delay must still deliver"
+    assert decide("schedule", early, "")[0] is False, "the winter slot at 17:25 local waits"
+    assert decide("schedule", late, "2026-09-16")[0] is False, "one delivery per day"
+    assert decide("workflow_dispatch", early, "2026-09-16")[0] is True, "manual runs always go"

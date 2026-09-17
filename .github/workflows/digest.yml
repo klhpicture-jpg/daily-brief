@@ -2,9 +2,10 @@ name: digest
 
 on:
   schedule:
-    # Target: 18:25 Europe/Copenhagen every day, message on the phone around 18:28.
-    # Cron is UTC and ignores DST, so both candidate hours fire and the
-    # "Only run at 18 local" step lets exactly one of them through.
+    # Target: 18:25 Europe/Copenhagen every day. Cron is UTC and ignores DST, so
+    # both candidate hours fire and scripts/gate.py lets exactly one through.
+    # GitHub often starts scheduled runs late, so the gate accepts anything from
+    # 18:00 local until midnight rather than demanding an exact hour.
     - cron: "25 16 * * *"   # 18:25 CEST (summer)
     - cron: "25 17 * * *"   # 18:25 CET (winter)
   workflow_dispatch:
@@ -51,19 +52,11 @@ jobs:
       OPENAI_TRANSCRIBE_MODEL: ${{ vars.OPENAI_TRANSCRIBE_MODEL || 'gpt-4o-mini-transcribe' }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: Only run at 18 local time (Europe/Copenhagen)
-        id: gate
-        run: |
-          hour=$(TZ=Europe/Copenhagen date +%H)
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "$hour" != "18" ]; then
-            echo "local hour is $hour, not 18, skipping this cron slot"
-            echo "run=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "run=true" >> "$GITHUB_OUTPUT"
-          fi
-
       - uses: actions/checkout@v5
-        if: steps.gate.outputs.run == 'true'
+
+      - name: Decide whether this slot runs
+        id: gate
+        run: python3 scripts/gate.py >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-python@v6
         if: steps.gate.outputs.run == 'true'
@@ -91,6 +84,10 @@ jobs:
           ${{ inputs.dry_run == true && '--dry-run' || '' }}
           ${{ inputs.ignore_seen == true && '--ignore-seen' || '' }}
           ${{ inputs.since != '' && format('--since {0}', inputs.since) || '' }}
+
+      - name: Record today's scheduled delivery
+        if: steps.gate.outputs.run == 'true' && github.event_name == 'schedule' && inputs.dry_run != true
+        run: TZ=Europe/Copenhagen date +%F > state/last_scheduled.txt
 
       - name: Commit state and pages
         if: steps.gate.outputs.run == 'true' && inputs.dry_run != true
