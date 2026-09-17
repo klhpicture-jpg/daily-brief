@@ -143,7 +143,7 @@ def rank_items(items: list[Item], topics_text: str, learned_text: str, model: st
 QUOTA = {"high": 2, "medium": 1, "low": 0}
 
 
-def select(items: list[Item], topics: dict | None = None) -> list[Item]:
+def select(items: list[Item], topics: dict | None = None, max_items: int = MAX_ITEMS) -> list[Item]:
     """Keep 3+, capped at MAX_ITEMS. Below 5 survivors, drop the bar to 2.
 
     Every priority in topics.yaml gets a floor first (2 items for weight high,
@@ -154,19 +154,19 @@ def select(items: list[Item], topics: dict | None = None) -> list[Item]:
     keep = [it for it in ordered if (it.score or 0) >= KEEP_THRESHOLD]
     if len(keep) < MIN_ITEMS:
         keep = [it for it in ordered if (it.score or 0) >= FALLBACK_THRESHOLD]
-    if len(keep) <= MAX_ITEMS:
+    if len(keep) <= max_items:
         return keep
     picks: list[Item] = []
     for index, priority in enumerate((topics or {}).get("priorities", [])):
         quota = QUOTA.get(str(priority.get("weight", "medium")).lower(), 1)
         for it in keep:
-            if quota == 0 or len(picks) >= MAX_ITEMS:
+            if quota == 0 or len(picks) >= max_items:
                 break
             if it.meta.get("priority") == index and it not in picks:
                 picks.append(it)
                 quota -= 1
     for it in keep:
-        if len(picks) >= MAX_ITEMS:
+        if len(picks) >= max_items:
             break
         if it not in picks:
             picks.append(it)

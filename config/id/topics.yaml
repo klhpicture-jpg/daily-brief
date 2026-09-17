@@ -1,0 +1,44 @@
+# Ugentlig branchebrief for ID Identity (Rexholm A/S). Mandag morgen.
+# Rangeringen og skriveren ser filen ordret. Alt skrives på dansk.
+me: >
+  Jeg rådgiver ID Identity (Rexholm A/S, Holstebro) om marked og go-to-market. ID producerer
+  profilbeklædning, firmatøj og arbejdstøj (brands ID, Geyser, PRO Wear, Seven Seas) og sælger
+  B2B gennem et forhandlernetværk af reklamebureauer, tryk- og broderivirksomheder og
+  arbejdstøjsforhandlere i Norden, DACH og resten af Europa. Omsætning omkring 592 mio. DKK,
+  cirka 40 procent eksport, over 7 mio. brandede styk om året.
+  Jeg læser det her mandag morgen for at vide hvad der er sket i branchen i sidste uge, og hvad
+  jeg skal bringe op på næste møde. Giv mig beslutninger og bevægelser, ikke produktnyheder.
+  Alt skal skrives på dansk, uanset kildens sprog.
+
+priorities:
+  - name: Konkurrenter og ejerskab
+    weight: high
+    include: [New Wave Group, Clique, Cottover, Projob, Jobman, Cutter og Buck, Fristads, Snickers, Hultafors, Latour, Blåkläder, Mascot, Kentaur, F. Engel, Tee Jays, Stanley/Stella, B&C Collection, The Cotton Group, Kariban, SOL'S, Result, James og Nicholson, Russell, Fruit of the Loom, regnskaber, opkøb, fusioner, nye ejere, direktørskifte, kapacitetsudvidelser, nye markeder]
+    note: >
+      Kvartalsregnskaber og opkøb er altid relevante. Et produktkatalog er ikke.
+
+  - name: Regulering af tekstil og bæredygtighed
+    weight: high
+    include: [digitalt produktpas (DPP), ESPR og delegerede retsakter for tekstil, udvidet producentansvar (EPR) for tekstil, PPWR emballage, forbud mod destruktion af usolgte varer, CSRD og ESRS, CSDDD, green claims, EU-toldregler, oprindelsesmærkning]
+    note: >
+      Kun når noget er vedtaget, udskudt eller får en dato. Ikke høringssvar og holdninger.
+
+  - name: Promotion- og arbejdstøjsbranchen
+    weight: high
+    include: [reklamebranchen og promotional products i Europa, PSI, eppi, Werbeartikel, konsolidering blandt distributører, Promidata og produktdata til forhandlere, messer (PSI Düsseldorf, FESPA, Printwear og Promotion Live, A+A, Myvendo), dekorationsteknologi (DTF, DTG, broderi, print on demand)]
+
+  - name: B2B e-handel og forhandlerkanal
+    weight: medium
+    include: [B2B e-handel, selvbetjening for forhandlere, PIM og produktdata, e-handelsplatforme, dansk e-handelsstatistik, Dansk Erhverv og FDIH analyser, kundeadfærd i B2B-indkøb]
+
+  - name: Indkøb, råvarer og told
+    weight: medium
+    include: [bomuldspriser, fragtrater, told og handelsaftaler, produktion i Bangladesh, Tyrkiet, Kina og Portugal, leveringstider, nearshoring til Europa]
+
+exclude:
+  - produktlanceringer og kollektioner uden en forretningsmæssig vinkel
+  - mode og detailhandel til forbrugere, medmindre det rammer arbejdstøj eller profilbeklædning
+  - pressemeddelelser og sponsoreret indhold uden ny information
+  - generelle bæredygtighedsholdninger uden en regel, en dato eller et tal
+  - krig, breaking news og partipolitik
+  - amerikansk promo-marked medmindre det siger noget om Europa

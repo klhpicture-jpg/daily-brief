@@ -35,10 +35,31 @@ Local run: `pip install -r requirements.txt`, copy `.env.example` to `.env`, exp
 
 Repo variables (not secrets): `DELIVERY_CHANNEL` (`telegram`, the default, `sms` or `whatsapp`), `OPENAI_RANK_MODEL`, `OPENAI_WRITE_MODEL`, `OPENAI_TRANSCRIBE_MODEL`.
 
+## Two briefs
+
+| | Daily brief | ID weekly |
+|---|---|---|
+| Profile | `daily` | `id` |
+| For | Kasper: AI, marketing, retail, Europe, sport | ID Identity (Rexholm): competitors, textile regulation, the promo and workwear trade |
+| When | every day, 18:25 Europe/Copenhagen | Monday, 07:25 Europe/Copenhagen |
+| Window | since the last run, at most 24h | since the last run, at most 7 days |
+| Items | up to 12 | up to 10 |
+| Config | `config/` | `config/id/` |
+| Pages | `/` | `/id/` |
+| Workflow | `digest.yml` | `weekly.yml` |
+
+Both go to the same Telegram chat. The message is prefixed with the brief's name.
+Run either by hand from the Actions tab, or locally with `python -m src.main --profile id`.
+
+**An empty edition sends nothing.** If no item clears the ranker's bar, the run writes no page,
+sends no message and leaves the previous edition in place. It only records the run. That matters
+most for the weekly brief, where a quiet week in the trade press is normal and a message saying
+"nothing happened" is worse than no message.
+
 ## Add a source
 
-Add one line to `config/sources.yaml` and commit. A broken source never kills the run: it is
-listed in the page footer instead. Run the "check sources" workflow after editing.
+Add one line to `config/sources.yaml` (or `config/id/sources.yaml` for the weekly brief) and commit. A broken source never kills the run: it is
+listed in the page footer instead. Run the "check sources" workflow after editing and pick the profile in the dropdown.
 
 - **Anything with a feed** goes under `rss`. Free. Substack: append `/feed` to the URL. Acast
   podcasts: `feeds.acast.com/public/shows/<show>`.
@@ -51,7 +72,7 @@ listed in the page footer instead. Run the "check sources" workflow after editin
 
 ## Change topics
 
-Edit `config/topics.yaml`. The ranker and the writer see the file verbatim, so write it
+Edit `config/topics.yaml`, or `config/id/topics.yaml` for the weekly industry brief. The ranker and the writer see the file verbatim, so write it
 like a brief to a smart assistant: who you are, what you care about in priority order, what
 to exclude. No code changes, the next run picks it up.
 
@@ -96,6 +117,8 @@ are counted as zero with a warning in the log. A typical run with 15 feeds is a 
 config/topics.yaml     what I care about, the highest leverage file
 config/sources.yaml    feeds, pages, accounts
 config/learned.md      auto-generated from feedback
+config/id/             the same three files for the weekly ID industry brief
+scripts/gate.py        decides whether a scheduled slot runs (DST, delays, once per period)
 src/collectors/        one module per source type, all emit the same Item
 src/rank.py            stage 1, cheap model scores everything
 src/digest.py          stage 2, strong model writes the survivors
@@ -103,6 +126,8 @@ src/render.py          the page
 src/deliver.py         Twilio
 src/main.py            orchestrator
 state/seen.json        hashes already shown, committed back by the workflow
-state/runs.jsonl       one line per run: counts, errors, cost
-docs/                  GitHub Pages output, one file per day plus index and archive
+state/runs.jsonl       one line per run: counts, errors, cost, whether it delivered
+state/id/              the same state for the weekly brief
+docs/                  GitHub Pages output, one file per edition plus index and archive
+docs/id/               the weekly brief's pages
 ```

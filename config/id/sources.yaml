@@ -1,0 +1,79 @@
+# Kilder til den ugentlige ID-branchebrief.
+#
+# ALLE URL'er herunder er gæt fra et researchdokument (17. september 2026) og IKKE
+# testet. Kør "check sources" med profile=id (Actions-fanen), så fjerner vi dem der fejler.
+#
+# Tre ting ligger bevidst udenfor:
+# - Betalingsmure (Børsen, Finans, Ecotextile-artikler, PSI Journal, Digital Commerce 360
+#   rapporter). Vi tager overskrifter med hvor feedet er åbent, ellers ingenting.
+# - Private konkurrenters hjemmesider (Mascot, Kentaur, Engel, Tee Jays, Blåkläder). De har
+#   ingen feeds. De kommer med i fase 3 som web watch.
+# - CVR-regnskaber. Separat script, kvartalsvis.
+
+rss:
+  # Konkurrenter, børsnoterede. Det stærkeste signal i hele listen.
+  - { name: "New Wave Group", url: "https://www.nwg.se/en/feed/" }
+  - { name: "New Wave Group (MFN)", url: "https://mfn.se/all/a/new-wave-group.rss" }
+  - { name: "Hultafors Group (Snickers, Fristads)", url: "https://www.hultaforsgroup.com/feed/" }
+  - { name: "Investment AB Latour", url: "https://www.latour.se/en/feed/" }
+  - { name: "Gildan", url: "https://gildancorp.com/en/feed/" }
+
+  # Promotion- og dekorationsbranchen
+  - { name: "eppi magazine", url: "https://www.eppi-online.com/feed" }
+  - { name: "Werbeartikel Nachrichten", url: "https://www.werbeartikel-verlag.de/feed" }
+  - { name: "PSI Network", url: "https://www.psi-network.de/en/rss" }
+  - { name: "Images Magazine", url: "https://www.images-magazine.com/feed/" }
+  - { name: "Printwear & Promotion", url: "https://printwearandpromotion.co.uk/feed/" }
+  - { name: "FESPA", url: "https://www.fespa.com/en/rss" }
+  - { name: "PPAI Media", url: "https://www.ppai.org/feed/" }
+  - { name: "ASI Central", url: "https://www.asicentral.com/rss/news/" }
+
+  # Tekstil, sourcing og regulering
+  - { name: "Ecotextile News", url: "https://www.ecotextile.com/feed" }
+  - { name: "Sourcing Journal", url: "https://sourcingjournal.com/feed/" }
+  - { name: "Just Style", url: "https://www.just-style.com/feed/" }
+  - { name: "Apparel Insider", url: "https://apparelinsider.com/feed/" }
+  - { name: "Textination", url: "https://www.textination.de/rss/news" }
+
+  # Dansk industri og e-handel
+  - { name: "Dansk Mode & Textil", url: "https://dmogt.dk/feed/" }
+  - { name: "Dansk Erhverv", url: "https://www.danskerhverv.dk/rss/nyheder/" }
+  - { name: "Lifestyle & Design Cluster", url: "https://ldcluster.com/feed/" }
+  - { name: "Ecommerce News Europe", url: "https://ecommercenews.eu/feed/" }
+
+  # Nyhedsbreve uden feed. Opret en feed-adresse på kill-the-newsletter.com, tilmeld dig
+  # med den, og sæt URL'en ind her:
+  # - { name: "DM&T nyhedsbrev", url: "https://kill-the-newsletter.com/feeds/XXXX.xml" }
+  # - { name: "WA eLETTER", url: "https://kill-the-newsletter.com/feeds/XXXX.xml" }
+  # - { name: "Handelsblatt Morning Briefing", url: "https://kill-the-newsletter.com/feeds/XXXX.xml" }
+  #
+  # Google Alerts. Opret hver søgning på google.com/alerts, sæt levering til "RSS feed",
+  # kopiér feed-URL'en ind her. Forslag til søgestrenge:
+  #   "New Wave Group" (regnskab OR opkøb) | Mascot arbejdstøj | Kentaur OR "F. Engel"
+  #   profilbeklædning OR firmatøj | "digitalt produktpas" tekstil
+  #   Berufsbekleidung Hersteller (Übernahme OR Fusion) | Digital Product Passport textiles
+  # - { name: "Alert: konkurrenter DK", url: "https://www.google.com/alerts/feeds/XXXX/YYYY" }
+
+podcasts:
+  # Hentes gratis fra shownotes. transcribe: true tænder fuld transskription (fase 2).
+  - { name: "Kassenzone", feed: "https://kassenzone.de/feed/podcast/", max_minutes: 90, transcribe: false }
+  - { name: "Future Commerce", feed: "https://feeds.megaphone.fm/futurecommerce", max_minutes: 60, transcribe: false }
+  - { name: "The B2B eCommerce Show", feed: "https://feeds.buzzsprout.com/1734283.rss", max_minutes: 45, transcribe: false }
+
+web_watch:
+  # Fase 3. Private konkurrenter uden feed. Slås til når vi tager Firecrawl i brug.
+  - { name: "Mascot nyheder", url: "https://www.mascotworkwear.com/da-dk/news", mode: new_links }
+  - { name: "Kentaur nyheder", url: "https://kentaur.com/da/nyheder/", mode: new_links }
+  - { name: "Engel Workwear nyheder", url: "https://www.engel.eu/en/news", mode: new_links }
+  - { name: "Tee Jays nyheder", url: "https://teejays.com/news", mode: new_links }
+  - { name: "Blåkläder nyheder", url: "https://www.blaklader.se/nyheter", mode: new_links }
+  - { name: "Stanley/Stella presse", url: "https://www.stanleystella.com/press", mode: new_links }
+
+linkedin:
+  enabled: false
+  actor_id: "VERIFY"
+  profiles: []
+
+twitter:
+  enabled: false
+  handles: []

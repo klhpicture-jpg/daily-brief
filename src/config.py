@@ -1,7 +1,14 @@
-"""Config loading. YAML in config/, secrets and knobs from the environment."""
+"""Config loading. YAML in config/, secrets and knobs from the environment.
+
+The repo runs more than one brief. A Profile bundles everything that differs
+between them: which config files to read, where state and pages live, how many
+items a single edition may carry, and how far back a first run looks.
+"""
 from __future__ import annotations
 
 import os
+from dataclasses import dataclass
+from datetime import timedelta
 from pathlib import Path
 
 import yaml
@@ -14,6 +21,57 @@ DOCS_DIR = ROOT / "docs"
 DEFAULT_REPO = "klhpicture-jpg/daily-brief"
 
 
+@dataclass(frozen=True)
+class Profile:
+    name: str
+    title: str            # page header and message prefix
+    subdir: str           # "" for the daily brief, "id" for the weekly one
+    max_items: int
+    lookback: timedelta   # window on a first run, and the cap on a long gap
+
+    @property
+    def config_dir(self) -> Path:
+        return CONFIG_DIR / self.subdir if self.subdir else CONFIG_DIR
+
+    @property
+    def state_dir(self) -> Path:
+        return STATE_DIR / self.subdir if self.subdir else STATE_DIR
+
+    @property
+    def docs_dir(self) -> Path:
+        return DOCS_DIR / self.subdir if self.subdir else DOCS_DIR
+
+    @property
+    def page_prefix(self) -> str:
+        return f"{self.subdir}/" if self.subdir else ""
+
+
+PROFILES = {
+    "daily": Profile(
+        name="daily",
+        title="Daglig brief",
+        subdir="",
+        max_items=12,
+        lookback=timedelta(hours=24),
+    ),
+    "id": Profile(
+        name="id",
+        title="ID ugebrief",
+        subdir="id",
+        max_items=10,
+        lookback=timedelta(days=7),
+    ),
+}
+DAILY = PROFILES["daily"]
+
+
+def profile(name: str) -> Profile:
+    try:
+        return PROFILES[name]
+    except KeyError:
+        raise SystemExit(f"unknown profile {name!r}, expected one of {sorted(PROFILES)}") from None
+
+
 def repo() -> str:
     return os.environ.get("GITHUB_REPOSITORY") or DEFAULT_REPO
 
@@ -24,6 +82,10 @@ def pages_base_url() -> str:
         return explicit.rstrip("/")
     owner, _, name = repo().partition("/")
     return f"https://{owner}.github.io/{name}"
+
+
+def page_url(profile: Profile, day) -> str:
+    return f"{pages_base_url()}/{profile.page_prefix}{day.isoformat()}.html"
 
 
 def rank_model() -> str:
@@ -46,21 +108,21 @@ def _load_yaml(path: Path) -> dict:
     return data
 
 
-def load_topics() -> dict:
-    return _load_yaml(CONFIG_DIR / "topics.yaml")
+def load_topics(profile: Profile = DAILY) -> dict:
+    return _load_yaml(profile.config_dir / "topics.yaml")
 
 
-def topics_text() -> str:
-    """The ranker and writer see topics.yaml verbatim, as the file says."""
-    return (CONFIG_DIR / "topics.yaml").read_text(encoding="utf-8")
+def topics_text(profile: Profile = DAILY) -> str:
+    """The ranker and the writer see topics.yaml verbatim, as the file says."""
+    return (profile.config_dir / "topics.yaml").read_text(encoding="utf-8")
 
 
-def load_sources() -> dict:
-    return _load_yaml(CONFIG_DIR / "sources.yaml")
+def load_sources(profile: Profile = DAILY) -> dict:
+    return _load_yaml(profile.config_dir / "sources.yaml")
 
 
-def learned_text() -> str:
-    path = CONFIG_DIR / "learned.md"
+def learned_text(profile: Profile = DAILY) -> str:
+    path = profile.config_dir / "learned.md"
     return path.read_text(encoding="utf-8").strip() if path.exists() else ""
 
 

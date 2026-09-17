@@ -34,13 +34,14 @@ def _fit_line(line: str, limit: int) -> str:
     return line if len(line) <= limit else line[: limit - 1].rstrip() + "…"
 
 
-def build_message(date_label: str, headline: str, lines: list[str], more: int, page_url: str) -> str:
+def build_message(date_label: str, headline: str, lines: list[str], more: int, page_url: str, title: str = "") -> str:
     """The teaser. Top 3 as one line each, then 'N more: link'. Never over 480 chars."""
     lines = [_fit_line(x, LINE_MAX) for x in lines[:3]]
     limit = LINE_MAX
     while True:
         numbered = "\n".join(f"{i + 1}. {_fit_line(x, limit)}" for i, x in enumerate(lines))
-        head = f"{date_label} - {_fit_line(headline, 60)}"
+        prefix = f"{title}, " if title else ""
+        head = f"{prefix}{date_label} - {_fit_line(headline, 60)}"
         tail = f"+{more} mere: {page_url}" if more > 0 else f"Hele siden: {page_url}"
         parts = [head]
         if numbered:
@@ -124,8 +125,8 @@ def send(message: str, template_variables: dict | None = None, silent: bool = Fa
     return msg.sid
 
 
-def send_digest(date_label: str, headline: str, lines: list[str], more: int, page_url: str) -> str:
-    message = build_message(date_label, headline, lines, more, page_url)
+def send_digest(date_label: str, headline: str, lines: list[str], more: int, page_url: str, title: str = "") -> str:
+    message = build_message(date_label, headline, lines, more, page_url, title)
     variables = {"1": f"{date_label} - {headline}"}
     for i in range(3):
         variables[str(i + 2)] = _fit_line(lines[i], LINE_MAX) if i < len(lines) else ""

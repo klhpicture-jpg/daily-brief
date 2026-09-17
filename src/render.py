@@ -94,6 +94,7 @@ def render_item(entry: dict, item: Item, repo: str, now: datetime) -> str:
 def render_page(
     *,
     digest: dict,
+    title: str = "Daglig brief",
     items: list[Item],
     day: date,
     repo: str,
@@ -135,9 +136,9 @@ def render_page(
     return (
         "<!DOCTYPE html>\n<html lang=\"da\"><head><meta charset=\"utf-8\">"
         f"<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
-        f"<meta name=\"color-scheme\" content=\"light dark\"><title>{_esc(day.isoformat())} · {_esc(headline)}</title>"
+        f"<meta name=\"color-scheme\" content=\"light dark\"><title>{_esc(day.isoformat())} · {_esc(title)}: {_esc(headline)}</title>"
         f"<style>{CSS.strip()}</style></head><body><main>"
-        f"<header><p class=\"date\">{_esc(date_label)}</p><h1>{_esc(headline)}</h1>{top3}</header>"
+        f"<header><p class=\"date\">{_esc(title)} · {_esc(date_label)}</p><h1>{_esc(headline)}</h1>{top3}</header>"
         f"{''.join(body)}"
         f"<footer><p>{_esc(stats)}</p>{failed_block}"
         f"<p><a href=\"{_esc(archive_href)}\">Arkiv</a> · <a href=\"https://github.com/{_esc(repo)}\">Repo</a></p></footer>"
@@ -145,25 +146,25 @@ def render_page(
     )
 
 
-def render_archive(docs_dir: Path) -> str:
+def render_archive(docs_dir: Path, title: str = "Daglig brief") -> str:
     days = sorted((p.stem for p in docs_dir.glob("*.html") if DATE_RE.match(p.name)), reverse=True)
     rows = "".join(f'<li><a href="{d}.html">{d}</a></li>' for d in days)
     return (
         "<!DOCTYPE html>\n<html lang=\"da\"><head><meta charset=\"utf-8\">"
         "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
-        "<meta name=\"color-scheme\" content=\"light dark\"><title>Daily brief, arkiv</title>"
-        f"<style>{CSS.strip()}</style></head><body><main><header><h1>Arkiv</h1></header>"
+        f"<meta name=\"color-scheme\" content=\"light dark\"><title>{_esc(title)}, arkiv</title>"
+        f"<style>{CSS.strip()}</style></head><body><main><header><h1>{_esc(title)}, arkiv</h1></header>"
         f"<ul>{rows or '<li>Ingen udgaver endnu.</li>'}</ul>"
         "<footer><p><a href=\"index.html\">Seneste</a></p></footer></main></body></html>\n"
     )
 
 
-def write_pages(page_html: str, docs_dir: Path, day: date) -> dict[str, Path]:
+def write_pages(page_html: str, docs_dir: Path, day: date, title: str = "Daglig brief") -> dict[str, Path]:
     docs_dir.mkdir(parents=True, exist_ok=True)
     daily = docs_dir / f"{day.isoformat()}.html"
     index = docs_dir / "index.html"
     archive = docs_dir / "archive.html"
     daily.write_text(page_html, encoding="utf-8")
     index.write_text(page_html, encoding="utf-8")
-    archive.write_text(render_archive(docs_dir), encoding="utf-8")
+    archive.write_text(render_archive(docs_dir, title), encoding="utf-8")
     return {"daily": daily, "index": index, "archive": archive}

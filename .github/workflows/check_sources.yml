@@ -2,6 +2,12 @@ name: check sources
 
 on:
   workflow_dispatch:
+    inputs:
+      profile:
+        description: "Which brief's sources to check"
+        type: choice
+        options: [daily, id]
+        default: daily
 
 jobs:
   check:
@@ -14,5 +20,5 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install -r requirements.txt
-      - name: Check every feed in config/sources.yaml
-        run: python scripts/check_feeds.py
+      - name: Check every feed in the profile's sources.yaml
+        run: python scripts/check_feeds.py --profile ${{ inputs.profile }}

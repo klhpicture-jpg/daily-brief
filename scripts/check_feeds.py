@@ -1,8 +1,9 @@
-"""Verify every feed in config/sources.yaml: HTTP 200, parses, has entries,
+"""Verify every feed in a profile's sources.yaml: HTTP 200, parses, has entries,
 and for podcasts that the enclosures are audio.
 
-    python scripts/check_feeds.py            # all
-    python scripts/check_feeds.py --podcasts # only podcasts
+    python scripts/check_feeds.py                 # the daily brief
+    python scripts/check_feeds.py --profile id    # the weekly industry brief
+    python scripts/check_feeds.py --podcasts      # only podcasts
 """
 from __future__ import annotations
 
@@ -44,10 +45,11 @@ def check(url: str, want_audio: bool) -> tuple[bool, str]:
 
 def main() -> int:
     p = argparse.ArgumentParser()
+    p.add_argument("--profile", default="daily", help="which brief's sources to check")
     p.add_argument("--podcasts", action="store_true", help="only check podcast feeds")
     p.add_argument("--rss", action="store_true", help="only check rss feeds")
     args = p.parse_args()
-    sources = config.load_sources()
+    sources = config.load_sources(config.profile(args.profile))
     failures = 0
     rows: list[tuple[str, str, bool]] = []
     if not args.podcasts:
