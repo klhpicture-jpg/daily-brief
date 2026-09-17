@@ -10,7 +10,6 @@ Prints GitHub Actions outputs (run, reason) to stdout.
 """
 from __future__ import annotations
 
-import json
 import os
 import sys
 from datetime import datetime
