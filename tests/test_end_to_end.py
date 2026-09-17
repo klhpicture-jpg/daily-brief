@@ -2,6 +2,9 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from zoneinfo import ZoneInfo
+
+from src import render
 from src.collectors import run_all
 from src.collectors.rss import collect_feed
 from src.main import main
@@ -37,7 +40,9 @@ def test_dry_run_no_llm_writes_a_page(tmp_path, monkeypatch):
     rc = main(["--dry-run", "--no-llm", "--since", "2026-09-14", "--out", str(tmp_path / "docs")])
     assert rc == 0
     index = (tmp_path / "docs" / "index.html").read_text()
-    assert "Stub-digest" in index and 'lang="da"' in index and "onsdag 16. september 2026" in index
+    assert "Stub-digest" in index and 'lang="da"' in index
+    today = datetime.now(ZoneInfo("Europe/Copenhagen")).date()
+    assert render.danish_date(today) in index, "the page header must carry today's Danish date"
     assert "Shopify raises Plus pricing" in index
     assert (state_dir / "seen.json").read_text() == json.dumps({"last_run": None, "seen": {}}), "dry run must not touch state"
 
