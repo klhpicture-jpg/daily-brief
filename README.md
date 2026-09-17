@@ -105,6 +105,17 @@ three lines, `{{5}}` the "N more" link), get it approved by Meta, and set
 `TWILIO_CONTENT_SID`. Meta bills per template message (utility or marketing category),
 check current pricing before switching.
 
+## Before a change goes live
+
+`python -m pytest` is the gate. It parses every workflow, checks both profiles end to end,
+and covers the traps this project has already fallen into: a run skipped because the clock
+did not match exactly, a date frozen into an assertion, a marker written from a second clock
+reading, a feed dismissed as dead when the server was only refusing a non-browser.
+
+Nothing in `src/` or `scripts/` may hardcode a date, a year or "today". Dates come from the
+run, names come from `src/render.py`. The page footer says when the cost is understated
+because a model is missing from the price table in `src/llm.py`.
+
 ## Cost
 
 The page footer shows the estimated LLM cost per run, from token counts times the price

@@ -100,6 +100,7 @@ def render_page(
     repo: str,
     errors: list[str],
     cost_usd: float,
+    unpriced: list[str] | tuple = (),
     counts: dict,
     now: datetime | None = None,
     archive_href: str = "archive.html",
@@ -132,6 +133,8 @@ def render_page(
         f"{counts.get('collected', 0)} hentet, {counts.get('new', 0)} nye, "
         f"{counts.get('ranked', 0)} rangeret, {counts.get('kept', 0)} valgt. Anslået pris ${cost_usd:.3f}."
     )
+    if unpriced:
+        stats += f" Prisen er for lav, den mangler {', '.join(unpriced)}."
 
     return (
         "<!DOCTYPE html>\n<html lang=\"da\"><head><meta charset=\"utf-8\">"

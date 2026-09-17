@@ -44,7 +44,7 @@ class Usage:
     audio_minutes: float = 0.0
     cost_usd: float = 0.0
     calls: int = 0
-    notes: list[str] = field(default_factory=list)
+    unpriced: list[str] = field(default_factory=list)
 
     def add_tokens(self, model: str, prompt_tokens: int, completion_tokens: int) -> None:
         self.calls += 1
@@ -52,7 +52,7 @@ class Usage:
         self.output_tokens += completion_tokens
         price = _lookup(PRICES_PER_M, model)
         if price is None:
-            self._note(f"no price known for {model}, cost not counted")
+            self._unpriced(model)
             return
         self.cost_usd += prompt_tokens / 1e6 * price[0] + completion_tokens / 1e6 * price[1]
 
@@ -61,14 +61,15 @@ class Usage:
         self.audio_minutes += minutes
         price = _lookup(TRANSCRIBE_PRICE_PER_MIN, model)
         if price is None:
-            self._note(f"no price known for {model}, cost not counted")
+            self._unpriced(model)
             return
         self.cost_usd += minutes * price
 
-    def _note(self, note: str) -> None:
-        if note not in self.notes:
-            log.warning(note)
-            self.notes.append(note)
+    def _unpriced(self, model: str) -> None:
+        """A model the price table does not know. The cost shown is then too low."""
+        if model not in self.unpriced:
+            log.warning("no price known for %s, its tokens are missing from the cost", model)
+            self.unpriced.append(model)
 
 
 def _lookup(table: dict, model: str):

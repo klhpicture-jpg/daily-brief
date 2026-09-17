@@ -157,3 +157,27 @@ def test_fetch_feed_retries_as_a_browser_when_served_html():
 
     assert len(parsed.entries) == 1 and parsed.entries[0].title == "Mascot opens a plant"
     assert len(calls) == 2 and not calls[0].startswith("Mozilla/") and calls[1].startswith("Mozilla/")
+
+
+def test_every_workflow_is_valid_yaml_with_the_steps_it_needs():
+    """A workflow that does not parse fails only once it is pushed, which is too late."""
+    import yaml
+
+    from src import config
+
+    workflows = sorted((config.ROOT / ".github" / "workflows").glob("*.yml"))
+    assert len(workflows) >= 4, "expected the digest, weekly, source and setup checks"
+    for path in workflows:
+        parsed = yaml.safe_load(path.read_text(encoding="utf-8"))
+        assert parsed, f"{path.name} is empty"
+        jobs = parsed.get("jobs") or {}
+        assert jobs, f"{path.name} declares no jobs"
+        for job in jobs.values():
+            for step in job.get("steps", []):
+                assert step.get("uses") or step.get("run"), f"{path.name} has a step that does nothing"
+
+    for name, marker in [("digest.yml", "state/last_scheduled.txt"), ("weekly.yml", "state/id/last_scheduled.txt")]:
+        text = (config.ROOT / ".github" / "workflows" / name).read_text(encoding="utf-8")
+        assert marker in text, f"{name} must gate on its own marker file"
+        assert "steps.gate.outputs.period" in text, f"{name} must record the period the gate decided on"
+        assert "date +%F" not in text, f"{name} must not read the clock again when writing the marker"

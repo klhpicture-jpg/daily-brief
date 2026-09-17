@@ -106,7 +106,7 @@ def run(args: argparse.Namespace) -> int:
     counts = counts_of(collected, fresh, kept)
     page = render.render_page(
         digest=written, items=kept, day=today, repo=config.repo(), errors=errors,
-        cost_usd=usage.cost_usd, counts=counts, now=now, title=profile.title,
+        cost_usd=usage.cost_usd, unpriced=usage.unpriced, counts=counts, now=now, title=profile.title,
     )
     if args.out:
         out_dir = Path(args.out)
@@ -163,6 +163,7 @@ def _record(args, profile, now, today, since, counts, errors, usage, delivery_er
         "input_tokens": usage.input_tokens,
         "output_tokens": usage.output_tokens,
         "cost_usd": round(usage.cost_usd, 4),
+        "unpriced_models": usage.unpriced,
     }
 
 

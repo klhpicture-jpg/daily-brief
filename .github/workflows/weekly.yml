@@ -51,6 +51,12 @@ jobs:
         id: gate
         run: python3 scripts/gate.py --marker state/id/last_scheduled.txt --from-hour 18 --weekly --weekday 0 >> "$GITHUB_OUTPUT"
 
+      - name: Note the decision in the run summary
+        env:
+          REASON: ${{ steps.gate.outputs.reason }}
+        run: |
+          printf 'Gate decision: %s\n' "$REASON" >> "$GITHUB_STEP_SUMMARY"
+
       - uses: actions/setup-python@v6
         if: steps.gate.outputs.run == 'true'
         with:
@@ -71,7 +77,9 @@ jobs:
 
       - name: Record this week's scheduled delivery
         if: steps.gate.outputs.run == 'true' && github.event_name == 'schedule' && inputs.dry_run != true
-        run: echo "${{ steps.gate.outputs.period }}" > state/id/last_scheduled.txt
+        env:
+          PERIOD: ${{ steps.gate.outputs.period }}
+        run: printf '%s\n' "$PERIOD" > state/id/last_scheduled.txt
 
       - name: Commit state and pages
         if: steps.gate.outputs.run == 'true' && inputs.dry_run != true
